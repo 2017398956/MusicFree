@@ -1,13 +1,12 @@
 declare namespace IPlugin {
     export interface IMediaSourceResult {
         headers?: Record<string, string>;
-        /** 标准音质 */
-        url: string;
-        /** 高品质 */
-        urlHQ?: string;
-        /** 超高音质 */
-        urlSQ?: string;
+        /** 兜底播放 */
+        url?: string;
+        /** UA */
         userAgent?: string;
+        /** 音质 */
+        quality?: IMusic.IQualityKey;
     }
 
     export interface ISearchResult<T extends ICommon.SupportMediaType> {
@@ -56,6 +55,7 @@ declare namespace IPlugin {
         /** 获取根据音乐信息获取url */
         getMediaSource?: (
             musicItem: IMusic.IMusicItemBase,
+            quality: IMusic.IQualityKey,
         ) => Promise<IMediaSourceResult | null>;
         /** 根据主键去查询歌曲信息 */
         getMusicInfo?: (

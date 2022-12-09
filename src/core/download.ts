@@ -1,6 +1,7 @@
 import {internalSerializeKey} from '@/constants/commonConst';
 import pathConst from '@/constants/pathConst';
 import {isSameMediaItem} from '@/utils/mediaItem';
+import {getQualityOrder} from '@/utils/qualities';
 import StateMapper from '@/utils/stateMapper';
 import Toast from '@/utils/toast';
 import produce from 'immer';
@@ -40,7 +41,7 @@ const getDownloadPath = (fileName?: string) => {
     if (!dlPath.endsWith('/')) {
         return `${dlPath}/${fileName ?? ''}`;
     }
-    return fileName ? dlPath : dlPath + fileName;
+    return fileName ? dlPath + fileName : dlPath;
 };
 
 /** 从待下载中移除 */
@@ -128,8 +129,25 @@ async function downloadNext() {
         const plugin = PluginManager.getByName(musicItem.platform);
         if (plugin) {
             try {
-                const data = await plugin.methods.getMediaSource(musicItem);
-                url = data?.url;
+                const qualityOrder = getQualityOrder(
+                    Config.get('setting.basic.defaultDownloadQuality') ??
+                        'standard',
+                    Config.get('setting.basic.downloadQualityOrder') ?? 'asc',
+                );
+                let data: IPlugin.IMediaSourceResult | null = null;
+                for (let quality of qualityOrder) {
+                    try {
+                        data = await plugin.methods.getMediaSource(
+                            musicItem,
+                            quality,
+                        );
+                        if (!data?.url) {
+                            continue;
+                        }
+                        break;
+                    } catch {}
+                }
+                url = data?.url ?? url;
                 headers = data?.headers;
             } catch {
                 /** 无法下载，跳过 */

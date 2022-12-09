@@ -21,8 +21,10 @@ import {PluginMeta} from '@/core/pluginMeta';
 import produce from 'immer';
 import objectPath from 'object-path';
 import SortableFlatList from '@/components/base/SortableFlatList';
+import {emptyFunction} from '@/constants/commonConst';
 
 const ITEM_HEIGHT = rpx(96);
+const ITEM_HEIGHT_BIG = rpx(120);
 const marginTop = rpx(88 + 64) + (StatusBar.currentHeight ?? 0);
 
 export default function PluginSetting() {
@@ -342,7 +344,7 @@ function PluginView(props: IPluginViewProps) {
                 },
             }}
             style={{
-                height: ITEM_HEIGHT,
+                height: ITEM_HEIGHT_BIG,
             }}
             titleStyle={[
                 {
@@ -351,6 +353,7 @@ function PluginView(props: IPluginViewProps) {
                 },
                 plugin.state === 'error' ? {color: 'red'} : undefined,
             ]}
+            key={`plg-${plugin.hash}`}
             title={`${plugin.name}${
                 plugin.instance.version ? `(${plugin.instance.version})` : ''
             }`}
@@ -364,15 +367,13 @@ function PluginView(props: IPluginViewProps) {
             {options.map(_ =>
                 _.show ? (
                     <ListItem
-                        itemHeight={ITEM_HEIGHT}
+                        itemHeight={ITEM_HEIGHT_BIG}
                         key={`${plugin.hash}${_.title}`}
                         left={{icon: {name: _.icon}}}
                         title={_.title}
                         onPress={_.onPress}
                     />
-                ) : (
-                    <></>
-                ),
+                ) : null,
             )}
         </List.Accordion>
     );
@@ -405,9 +406,11 @@ async function installPluginFromUrl(text: string) {
         } else {
             urls = [iptUrl];
         }
-        await Promise.allSettled(
-            urls.map(url => PluginManager.installPluginFromUrl(url)),
-        ).catch();
+        await Promise.all(
+            urls.map(url =>
+                PluginManager.installPluginFromUrl(url).catch(emptyFunction),
+            ),
+        );
         Toast.success('插件安装成功~');
     } catch (e: any) {
         Toast.warn(`插件安装失败: ${e?.message ?? ''}`);

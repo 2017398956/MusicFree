@@ -4,6 +4,7 @@ import TrackPlayer, {
     RepeatMode,
     State,
     Track,
+    TrackMetadataBase,
     usePlaybackState,
     useProgress,
 } from 'react-native-track-player';
@@ -20,6 +21,7 @@ import Network from './network';
 import Toast from '@/utils/toast';
 import LocalMusicSheet from './localMusicSheet';
 import {SoundAsset} from '@/constants/assetsConst';
+import {getQualityOrder} from '@/utils/qualities';
 
 enum MusicRepeatMode {
     /** 随机播放 */
@@ -34,14 +36,16 @@ enum MusicRepeatMode {
 let currentIndex: number = -1;
 let musicQueue: Array<IMusic.IMusicItem> = [];
 let repeatMode: MusicRepeatMode = MusicRepeatMode.QUEUE;
-
+let currentQuality: IMusic.IQualityKey = 'standard';
 const getRepeatMode = () => repeatMode;
 const getCurrentMusicItem = () => musicQueue[currentIndex];
 const getMusicQueue = () => musicQueue;
+const getCurrentQuality = () => currentQuality;
 
 const currentMusicStateMapper = new StateMapper(getCurrentMusicItem);
 const musicQueueStateMapper = new StateMapper(getMusicQueue);
 const repeatModeStateMapper = new StateMapper(getRepeatMode);
+const currentQualityStateMapper = new StateMapper(getCurrentQuality);
 
 /** 内部使用的排序id */
 let globalId: number = 0; // 记录加入队列的次序
@@ -85,6 +89,8 @@ const setup = async () => {
         if (config?.progress) {
             await TrackPlayer.seekTo(config.progress);
         }
+        currentQuality =
+            Config.get('setting.basic.defaultPlayQuality') ?? 'standard';
         trace('状态恢复', config);
     } catch (e) {
         errorLog('状态恢复失败', e);
@@ -115,7 +121,7 @@ const setup = async () => {
                 await MusicQueue.play(undefined, true);
             } else {
                 const queue = await TrackPlayer.getQueue();
-                // 要跳到的下一个就是当前的，并且队列里面有多首歌  因为有重复事件
+                // 要跳到的下一个就是当前的，并且队列里面有多首歌  因为有重复事件(因为不同的原因重复触发)
                 if (
                     isSameMediaItem(
                         queue[1] as unknown as ICommon.IMediaBase,
@@ -129,8 +135,7 @@ const setup = async () => {
                     evt,
                     queue,
                 });
-
-                await MusicQueue.skipToNext();
+                await skipToNext();
             }
         }
     });
@@ -335,14 +340,17 @@ const getFakeNextTrack = () => {
 const play = async (musicItem?: IMusic.IMusicItem, forcePlay?: boolean) => {
     try {
         trace('播放', musicItem);
+        //#region 移动网络时 根据设置重置player
         if (
             Network.isCellular() &&
             !Config.get('setting.basic.useCelluarNetworkPlay') &&
             !LocalMusicSheet.isLocalMusic(musicItem ?? null)
         ) {
             Toast.warn('当前设置移动网络不可播放，可在侧边栏基本设置中打开');
+            await TrackPlayer.reset();
             return;
         }
+        //#endregion
         const _currentIndex = findMusicIndex(musicItem);
         if (!musicItem && _currentIndex === currentIndex && !forcePlay) {
             // 如果暂停就继续播放，否则
@@ -372,10 +380,66 @@ const play = async (musicItem?: IMusic.IMusicItem, forcePlay?: boolean) => {
         try {
             // 通过插件获取音乐
             const plugin = PluginManager.getByName(_musicItem.platform);
-            const source = await plugin?.methods?.getMediaSource(_musicItem);
+            //#region 音质判断
+            const qualityOrder = getQualityOrder(
+                Config.get('setting.basic.defaultPlayQuality') ?? 'standard',
+                Config.get('setting.basic.playQualityOrder') ?? 'asc',
+            );
+            let source: IPlugin.IMediaSourceResult | null = null;
+            for (let quality of qualityOrder) {
+                if (isSameMediaItem(musicQueue[currentIndex], _musicItem)) {
+                    source =
+                        (await plugin?.methods?.getMediaSource(
+                            _musicItem,
+                            quality,
+                        )) ?? null;
+                    if (source) {
+                        currentQuality = quality;
+                        currentQualityStateMapper.notify();
+                        break;
+                    }
+                } else {
+                    // 中断
+                    return;
+                }
+            }
+            if (!source) {
+                if (!_musicItem.url) {
+                    throw new Error('播放失败');
+                }
+                source = {
+                    url: _musicItem.url,
+                };
+                currentQuality = 'standard';
+                currentQualityStateMapper.notify();
+            }
+            //#endregion
             // 获取音乐信息
+            track = mergeProps(_musicItem, source) as IMusic.IMusicItem;
+            /** 可能点了很多次。。。 */
+            if (!isSameMediaItem(_musicItem, musicQueue[currentIndex])) {
+                return;
+            }
+            musicQueue = produce(musicQueue, draft => {
+                draft[currentIndex] = track;
+            });
+            await replaceTrack(track as Track);
+            currentMusicStateMapper.notify();
+
             const info = await plugin?.methods?.getMusicInfo?.(_musicItem);
-            track = mergeProps(_musicItem, source, info) as IMusic.IMusicItem;
+            if (info && isSameMediaItem(_musicItem, musicQueue[currentIndex])) {
+                await TrackPlayer.updateMetadataForTrack(
+                    0,
+                    mergeProps(track, info) as TrackMetadataBase,
+                );
+                musicQueue = produce(musicQueue, draft => {
+                    draft[currentIndex] = mergeProps(
+                        track as IMusic.IMusicItem,
+                        info,
+                    ) as IMusic.IMusicItem;
+                });
+                currentMusicStateMapper.notify();
+            }
         } catch (e) {
             // 播放失败
             if (isSameMediaItem(_musicItem, musicQueue[currentIndex])) {
@@ -383,15 +447,6 @@ const play = async (musicItem?: IMusic.IMusicItem, forcePlay?: boolean) => {
             }
             return;
         }
-        /** 可能点了很多次。。。 */
-        if (!isSameMediaItem(_musicItem, musicQueue[currentIndex])) {
-            return;
-        }
-        musicQueue = produce(musicQueue, draft => {
-            draft[currentIndex] = track;
-        });
-        await replaceTrack(track as Track);
-        currentMusicStateMapper.notify();
     } catch (e: any) {
         if (
             e?.message ===
@@ -407,7 +462,7 @@ const play = async (musicItem?: IMusic.IMusicItem, forcePlay?: boolean) => {
 
 const replaceTrack = async (track: Track, autoPlay = true) => {
     await TrackPlayer.reset();
-    await TrackPlayer.remove([0, 1]);
+    // await TrackPlayer.remove([0, 1]);
     // console.log(await TrackPlayer.getQueue(), 'REPLACE-TRACK');
     await TrackPlayer.add([track, getFakeNextTrack()]);
     // console.log(await TrackPlayer.getQueue(), 'REPLACE-TRACK-AFTER-ADD');
@@ -484,6 +539,38 @@ const skipToPrevious = async () => {
     );
 };
 
+/** 修改当前播放的音质 */
+const changeQuality = async (newQuality: IMusic.IQualityKey) => {
+    // 获取当前的音乐和进度
+    const musicItem = musicQueue[currentIndex];
+    if (newQuality === currentQuality) {
+        return true;
+    }
+    const position = await TrackPlayer.getPosition();
+    const plugin = PluginManager.getByMedia(musicItem);
+    try {
+        const newSource = await plugin?.methods?.getMediaSource(
+            musicItem,
+            newQuality,
+        );
+        if (!newSource?.url) {
+            throw new Error();
+        }
+        if (isSameMediaItem(musicItem, musicQueue[currentIndex])) {
+            await replaceTrack(
+                mergeProps(musicItem, newSource) as unknown as Track,
+            );
+            await TrackPlayer.seekTo(position);
+            currentQuality = newQuality;
+            currentQualityStateMapper.notify();
+        }
+        return true;
+    } catch {
+        // 修改失败
+        return false;
+    }
+};
+
 const MusicQueue = {
     setup,
     useMusicQueue: musicQueueStateMapper.useMappedState,
@@ -507,9 +594,12 @@ const MusicQueue = {
     usePlaybackState,
     MusicState: State,
     useProgress,
+    getPosition: TrackPlayer.getPosition,
     reset: TrackPlayer.reset,
     seekTo: TrackPlayer.seekTo,
     currentIndex,
+    changeQuality,
+    useCurrentQuality: currentQualityStateMapper.useMappedState,
 };
 
 export default MusicQueue;

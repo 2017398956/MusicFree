@@ -11,16 +11,6 @@ const emptyFunction = () => {};
 Object.freeze(emptyFunction);
 export {emptyFunction};
 
-/** 音质 */
-export enum Quality {
-    /** 标准 */
-    Standard,
-    /** 高音质 */
-    HighQuality,
-    /** 超高音质 */
-    SuperQuality,
-}
-
 export enum RequestStateCode {
     /** 空闲 */
     IDLE = 0,

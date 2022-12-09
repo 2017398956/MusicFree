@@ -11,7 +11,7 @@ import dayjs from 'dayjs';
 import axios from 'axios';
 import bigInt from 'big-integer';
 import qs from 'qs';
-import {ToastAndroid} from 'react-native';
+import {InteractionManager, ToastAndroid} from 'react-native';
 import pathConst from '@/constants/pathConst';
 import {compare, satisfies} from 'compare-versions';
 import DeviceInfo from 'react-native-device-info';
@@ -208,8 +208,9 @@ class PluginMethods implements IPlugin.IPluginInstanceMethods {
     /** 获取真实源 */
     async getMediaSource(
         musicItem: IMusic.IMusicItemBase,
+        quality: IMusic.IQualityKey = 'standard',
         retryCount = 1,
-    ): Promise<IPlugin.IMediaSourceResult> {
+    ): Promise<IPlugin.IMediaSourceResult | null> {
         // 1. 本地搜索 其实直接读mediameta就好了
         const localPath =
             getInternalData<string>(musicItem, InternalDataType.LOCALPATH) ??
@@ -232,14 +233,15 @@ class PluginMethods implements IPlugin.IPluginInstanceMethods {
             this.plugin.instance.cacheControl ?? 'no-cache';
         if (
             mediaCache &&
-            mediaCache?.url &&
+            mediaCache?.qualities?.[quality]?.url &&
             (pluginCacheControl === CacheControl.Cache ||
                 (pluginCacheControl === CacheControl.NoCache &&
                     Network.isOffline()))
         ) {
             trace('播放', '缓存播放');
+            const qualityInfo = mediaCache.qualities[quality];
             return {
-                url: mediaCache.url,
+                url: qualityInfo.url,
                 headers: mediaCache.headers,
                 userAgent:
                     mediaCache.userAgent ?? mediaCache.headers?.['user-agent'],
@@ -247,13 +249,15 @@ class PluginMethods implements IPlugin.IPluginInstanceMethods {
         }
         // 3. 插件解析
         if (!this.plugin.instance.getMediaSource) {
-            return {url: musicItem.url};
+            return {url: musicItem?.qualities?.[quality]?.url ?? musicItem.url};
         }
         try {
-            const {url, headers} =
-                (await this.plugin.instance.getMediaSource(musicItem)) ?? {};
+            const {url, headers} = (await this.plugin.instance.getMediaSource(
+                musicItem,
+                quality,
+            )) ?? {url: musicItem?.qualities?.[quality]?.url};
             if (!url) {
-                throw new Error();
+                throw new Error('NOT RETRY');
             }
             trace('播放', '插件播放');
             const result = {
@@ -263,17 +267,21 @@ class PluginMethods implements IPlugin.IPluginInstanceMethods {
             } as IPlugin.IMediaSourceResult;
 
             if (pluginCacheControl !== CacheControl.NoStore) {
-                Cache.update(musicItem, result);
+                Cache.update(musicItem, [
+                    ['headers', result.headers],
+                    ['userAgent', result.userAgent],
+                    [`qualities.${quality}.url`, url],
+                ]);
             }
 
             return result;
         } catch (e: any) {
-            if (retryCount > 0) {
+            if (retryCount > 0 && e?.message !== 'NOT RETRY') {
                 await delay(150);
-                return this.getMediaSource(musicItem, --retryCount);
+                return this.getMediaSource(musicItem, quality, --retryCount);
             }
             errorLog('获取真实源失败', e?.message);
-            throw e;
+            return null;
         }
     }
 
@@ -282,16 +290,16 @@ class PluginMethods implements IPlugin.IPluginInstanceMethods {
         musicItem: ICommon.IMediaBase,
     ): Promise<Partial<IMusic.IMusicItem> | null> {
         if (!this.plugin.instance.getMusicInfo) {
-            return {};
+            return null;
         }
         try {
             return (
                 this.plugin.instance.getMusicInfo(
                     resetMediaItem(musicItem, undefined, true),
-                ) ?? {}
+                ) ?? null
             );
         } catch (e) {
-            return {};
+            return null;
         }
     }
 
@@ -718,7 +726,7 @@ async function updatePlugin(plugin: Plugin) {
 }
 
 function getByMedia(mediaItem: ICommon.IMediaBase) {
-    return getByName(mediaItem.platform);
+    return getByName(mediaItem?.platform);
 }
 
 function getByHash(hash: string) {
@@ -766,15 +774,17 @@ function useSortedPlugins() {
     );
 
     useEffect(() => {
-        setSortedPlugins(
-            [..._plugins].sort((a, b) =>
-                (_pluginMetaAll[a.name]?.order ?? Infinity) -
-                    (_pluginMetaAll[b.name]?.order ?? Infinity) <
-                0
-                    ? -1
-                    : 1,
-            ),
-        );
+        InteractionManager.runAfterInteractions(() => {
+            setSortedPlugins(
+                [..._plugins].sort((a, b) =>
+                    (_pluginMetaAll[a.name]?.order ?? Infinity) -
+                        (_pluginMetaAll[b.name]?.order ?? Infinity) <
+                    0
+                        ? -1
+                        : 1,
+                ),
+            );
+        });
     }, [_plugins, _pluginMetaAll]);
 
     return sortedPlugins;
