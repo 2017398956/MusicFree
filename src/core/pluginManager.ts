@@ -210,6 +210,7 @@ class PluginMethods implements IPlugin.IPluginInstanceMethods {
         musicItem: IMusic.IMusicItemBase,
         quality: IMusic.IQualityKey = 'standard',
         retryCount = 1,
+        notUpdateCache = false,
     ): Promise<IPlugin.IMediaSourceResult | null> {
         // 1. 本地搜索 其实直接读mediameta就好了
         const localPath =
@@ -266,7 +267,10 @@ class PluginMethods implements IPlugin.IPluginInstanceMethods {
                 userAgent: headers?.['user-agent'],
             } as IPlugin.IMediaSourceResult;
 
-            if (pluginCacheControl !== CacheControl.NoStore) {
+            if (
+                pluginCacheControl !== CacheControl.NoStore &&
+                !notUpdateCache
+            ) {
                 Cache.update(musicItem, [
                     ['headers', result.headers],
                     ['userAgent', result.userAgent],
@@ -417,6 +421,14 @@ class PluginMethods implements IPlugin.IPluginInstanceMethods {
                 };
             }
         }
+        // 6. 如果是本地文件
+        const isDownloaded = LocalMusicSheet.isLocalMusic(musicItem);
+        if (musicItem.platform !== localPluginPlatform && isDownloaded) {
+            const res = await localFilePlugin.instance!.getLyric!(isDownloaded);
+            if (res) {
+                return res;
+            }
+        }
 
         return null;
     }
@@ -545,13 +557,32 @@ const localFilePlugin = new Plugin(function () {
                 musicBase,
                 InternalDataType.LOCALPATH,
             );
+            let rawLrc: string | null = null;
             if (localPath) {
-                const rawLrc = await Mp3Util.getLyric(localPath);
-                return {
-                    rawLrc,
-                };
+                // 读取内嵌歌词
+                try {
+                    rawLrc = await Mp3Util.getLyric(localPath);
+                } catch (e) {
+                    console.log('e', e);
+                }
+                if (!rawLrc) {
+                    // 读取配置歌词
+                    const lastDot = localPath.lastIndexOf('.');
+                    const lrcPath = localPath.slice(0, lastDot) + '.lrc';
+
+                    try {
+                        if (await exists(lrcPath)) {
+                            rawLrc = await readFile(lrcPath, 'utf8');
+                        }
+                    } catch {}
+                }
             }
-            return null;
+
+            return rawLrc
+                ? {
+                      rawLrc,
+                  }
+                : null;
         },
     };
 }, '');
