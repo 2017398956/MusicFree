@@ -115,14 +115,18 @@ export default function BasicSetting() {
                     'setting.basic.autoStopWhenError',
                     basicSetting?.autoStopWhenError ?? false,
                 ),
-
+                createRadio(
+                    '点击搜索结果内单曲时',
+                    'setting.basic.clickMusicInSearch',
+                    ['播放歌曲', '播放歌曲并替换播放列表'],
+                    basicSetting?.clickMusicInSearch ?? '播放歌曲',
+                ),
                 createRadio(
                     '点击专辑内单曲时',
                     'setting.basic.clickMusicInAlbum',
                     ['播放单曲', '播放专辑'],
                     basicSetting?.clickMusicInAlbum ?? '播放专辑',
                 ),
-
                 createRadio(
                     '默认播放音质',
                     'setting.basic.defaultPlayQuality',
@@ -313,7 +317,7 @@ export default function BasicSetting() {
             ],
         },
         {
-            title: '错误日志',
+            title: '开发选项',
             data: [
                 createSwitch(
                     '记录错误日志',
@@ -324,6 +328,11 @@ export default function BasicSetting() {
                     '记录详细日志',
                     'setting.basic.debug.traceLog',
                     basicSetting?.debug?.traceLog ?? false,
+                ),
+                createSwitch(
+                    '调试面板',
+                    'setting.basic.debug.devLog',
+                    basicSetting?.debug?.devLog ?? false,
                 ),
             ],
         },

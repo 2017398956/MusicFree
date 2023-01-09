@@ -21,7 +21,7 @@ import {PluginMeta} from '@/core/pluginMeta';
 import produce from 'immer';
 import objectPath from 'object-path';
 import SortableFlatList from '@/components/base/SortableFlatList';
-import {emptyFunction} from '@/constants/commonConst';
+import {addRandomHash} from '@/utils/fileUtils';
 
 const ITEM_HEIGHT = rpx(96);
 const ITEM_HEIGHT_BIG = rpx(120);
@@ -379,13 +379,6 @@ function PluginView(props: IPluginViewProps) {
     );
 }
 
-function addRandomHash(url: string) {
-    if (url.indexOf('#') === -1) {
-        return `${url}#${Date.now()}`;
-    }
-    return url;
-}
-
 async function installPluginFromUrl(text: string) {
     try {
         let urls: string[] = [];
@@ -406,13 +399,19 @@ async function installPluginFromUrl(text: string) {
         } else {
             urls = [iptUrl];
         }
+        const failedPlugins: Array<string> = [];
         await Promise.all(
             urls.map(url =>
-                PluginManager.installPluginFromUrl(url).catch(emptyFunction),
+                PluginManager.installPluginFromUrl(url).catch(e => {
+                    failedPlugins.push(e?.message ?? '');
+                }),
             ),
         );
+        if (failedPlugins.length) {
+            throw new Error(failedPlugins.join('\n'));
+        }
         Toast.success('插件安装成功~');
     } catch (e: any) {
-        Toast.warn(`插件安装失败: ${e?.message ?? ''}`);
+        Toast.warn(`部分插件安装失败: ${e?.message ?? ''}`);
     }
 }
