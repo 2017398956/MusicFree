@@ -50,6 +50,8 @@ declare namespace IPlugin {
         cacheControl?: 'cache' | 'no-cache' | 'no-store';
         /** 用户自定义输入 */
         userEnv?: IUserEnv[];
+        /** 提示文本 */
+        hints?: Record<string, string[]>;
         /** 搜索 */
         search?: ISearchFunc;
         /** 获取根据音乐信息获取url */
@@ -82,6 +84,7 @@ declare namespace IPlugin {
         ) => Promise<IMusic.IMusicItem | null>;
         /** 获取榜单 */
         getTopLists?: () => Promise<IMusic.IMusicTopListGroupItem[]>;
+        // todo:分页
         /** 获取榜单详情 */
         getTopListDetail?: (
             topListItem: IMusic.IMusicTopListItem,
