@@ -81,6 +81,7 @@ export default function MusicItemOptions(props: IMusicItemOptionsProps) {
         },
         {
             icon: 'album',
+            show: !!musicItem.album,
             title: `专辑: ${musicItem.album}`,
             onPress: () => {
                 Clipboard.setString(musicItem.album);
@@ -222,7 +223,8 @@ export default function MusicItemOptions(props: IMusicItemOptionsProps) {
                         {musicItem?.title}
                     </ThemeText>
                     <ThemeText fontColor="secondary" fontSize="description">
-                        {musicItem?.artist} - {musicItem?.album}
+                        {musicItem?.artist}{' '}
+                        {musicItem?.album ? `- ${musicItem.album}` : ''}
                     </ThemeText>
                 </View>
             </View>

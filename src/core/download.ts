@@ -3,7 +3,7 @@ import {
     supportLocalMediaType,
 } from '@/constants/commonConst';
 import pathConst from '@/constants/pathConst';
-import {addFileScheme} from '@/utils/fileUtils';
+import {addFileScheme, escapeCharacter} from '@/utils/fileUtils';
 import {errorLog} from '@/utils/log';
 import {isSameMediaItem} from '@/utils/mediaItem';
 import {getQualityOrder} from '@/utils/qualities';
@@ -18,6 +18,21 @@ import LocalMusicSheet from './localMusicSheet';
 import MediaMeta from './mediaMeta';
 import Network from './network';
 import PluginManager from './pluginManager';
+// import PQueue from 'p-queue/dist';
+// import PriorityQueue from 'p-queue/dist/priority-queue';
+
+// interface IDownloadProgress {
+//     progress: number;
+//     size: number;
+// }
+
+// const downloadQueue = new PQueue({
+//     concurrency: 3
+// });
+
+// const downloadProgress = new Map<string, IDownloadProgress>();
+// downloadQueue.concurrency = 3;
+// console.log(downloadQueue.concurrency);
 
 /** 队列中的元素 */
 interface IDownloadMusicOptions {
@@ -117,9 +132,9 @@ function stopNotifyProgress() {
 
 /** 生成下载文件名 */
 function generateFilename(musicItem: IMusic.IMusicItem) {
-    return `${encodeURIComponent(musicItem.platform)}@${encodeURIComponent(
+    return `${escapeCharacter(musicItem.platform)}@${escapeCharacter(
         musicItem.id,
-    )}@${encodeURIComponent(musicItem.title)}@${encodeURIComponent(
+    )}@${escapeCharacter(musicItem.title)}@${escapeCharacter(
         musicItem.artist,
     )}`.slice(0, 200);
 }

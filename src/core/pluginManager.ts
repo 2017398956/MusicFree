@@ -479,27 +479,46 @@ class PluginMethods implements IPlugin.IPluginInstanceMethods {
     /** 获取专辑信息 */
     async getAlbumInfo(
         albumItem: IAlbum.IAlbumItemBase,
-    ): Promise<IAlbum.IAlbumItem | null> {
+        page: number = 1,
+    ): Promise<IPlugin.IAlbumInfoResult | null> {
         if (!this.plugin.instance.getAlbumInfo) {
-            return {...albumItem, musicList: []};
+            return {
+                albumItem,
+                musicList: albumItem?.musicList ?? [],
+                isEnd: true,
+            };
         }
         try {
             const result = await this.plugin.instance.getAlbumInfo(
                 resetMediaItem(albumItem, undefined, true),
+                page,
             );
             if (!result) {
                 throw new Error();
             }
             result?.musicList?.forEach(_ => {
                 resetMediaItem(_, this.plugin.name);
+                _.album = albumItem.title;
             });
 
-            return {...albumItem, ...result};
+            if (page <= 1) {
+                // 合并信息
+                return {
+                    albumItem: {...albumItem, ...(result?.albumItem ?? {})},
+                    isEnd: result.isEnd === false ? false : true,
+                    musicList: result.musicList,
+                };
+            } else {
+                return {
+                    isEnd: result.isEnd === false ? false : true,
+                    musicList: result.musicList,
+                };
+            }
         } catch (e: any) {
             trace('获取专辑信息失败', e?.message);
             devLog('error', '获取专辑信息失败', e, e?.message);
 
-            return {...albumItem, musicList: []};
+            return null;
         }
     }
 

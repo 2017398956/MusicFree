@@ -68,3 +68,4 @@ keystore.properties
 .vscode/
 tmp/
 scripts/
+yarn.lock
