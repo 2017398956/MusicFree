@@ -1,5 +1,5 @@
 import React from 'react';
-import {StyleSheet} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
 import NavBar from './components/navBar';
 import Operations from './components/operations';
@@ -11,14 +11,20 @@ import HomeDrawer from './components/drawer';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import StatusBar from '@/components/base/statusBar';
 import useOrientation from '@/hooks/useOrientation';
+import HorizonalSafeAreaView from '@/components/base/horizonalSafeAreaView';
+import globalStyle from '@/constants/globalStyle';
 
 function Home() {
     return (
         <SafeAreaView edges={['top', 'bottom']} style={styles.appWrapper}>
             <StatusBar backgroundColor="transparent" />
-            <NavBar />
-            <Divider />
-            <Body />
+            <HorizonalSafeAreaView style={globalStyle.flex1}>
+                <>
+                    <NavBar />
+                    <Divider />
+                    <Body />
+                </>
+            </HorizonalSafeAreaView>
             <MusicBar />
         </SafeAreaView>
     );
@@ -27,19 +33,14 @@ function Home() {
 function Body() {
     const orientation = useOrientation();
     return (
-        <SafeAreaView
-            edges={['left', 'right']}
+        <View
             style={[
                 styles.appWrapper,
-                orientation === 'horizonal'
-                    ? {
-                          flexDirection: 'row',
-                      }
-                    : null,
+                orientation === 'horizonal' ? styles.flexRow : null,
             ]}>
-            <Operations />
+            <Operations orientation={orientation} />
             <MySheets />
-        </SafeAreaView>
+        </View>
     );
 }
 
@@ -64,5 +65,8 @@ const styles = StyleSheet.create({
     appWrapper: {
         flexDirection: 'column',
         flex: 1,
+    },
+    flexRow: {
+        flexDirection: 'row',
     },
 });
