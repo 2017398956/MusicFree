@@ -8,7 +8,7 @@ import Toast from '@/utils/toast';
 
 export default function () {
     const navigation = useNavigation<any>();
-    const {id = 'favorite'} = useParams<'sheet-detail'>();
+    const {id = 'favorite'} = useParams<'local-sheet-detail'>();
     const musicSheet = MusicSheet.useSheets(id);
     const {showDialog} = useDialog();
 
@@ -53,6 +53,43 @@ export default function () {
                     onPress() {
                         showDialog('EditSheetDetailDialog', {
                             musicSheet: musicSheet,
+                        });
+                    },
+                },
+                {
+                    icon: 'sort',
+                    title: '排序',
+                    onPress() {
+                        showDialog('RadioDialog', {
+                            content: [
+                                {
+                                    value: 'random',
+                                    key: '随机顺序',
+                                },
+                                {
+                                    value: 'a2z',
+                                    key: '歌曲名A-Z',
+                                },
+                                {
+                                    value: 'z2a',
+                                    key: '歌曲名Z-A',
+                                },
+                                {
+                                    value: 'arta2z',
+                                    key: '作者名A-Z',
+                                },
+                                {
+                                    value: 'artz2a',
+                                    key: '作者名Z-A',
+                                },
+                            ],
+                            title: '排序',
+                            async onOk(value) {
+                                MusicSheet.sortMusicList(
+                                    value as any,
+                                    musicSheet,
+                                );
+                            },
                         });
                     },
                 },
