@@ -110,19 +110,18 @@ function BottomIcon(props: IBottomIconProps) {
     return (
         <Pressable
             onPress={onPress}
-            style={[
-                style.bottomIconWrapper,
-                {backgroundColor: colors.primary},
-            ]}>
+            style={[style.bottomIconWrapper, {backgroundColor: colors.appBar}]}>
             <Icon
                 name={icon}
-                color={colors[color]}
+                color={colors.appBarText}
+                style={color === 'textSecondary' ? {opacity: 0.6} : undefined}
                 size={iconSizeConst.big}
                 onPress={onPress}
             />
             <ThemeText
                 fontSize="subTitle"
-                fontColor={color === 'text' ? 'normal' : 'secondary'}
+                fontColor={'appBarText'}
+                opacity={color === 'textSecondary' ? 0.6 : undefined}
                 style={style.bottomIconText}>
                 {title}
             </ThemeText>

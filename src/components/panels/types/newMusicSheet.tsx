@@ -1,16 +1,15 @@
 import React, {useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 import rpx, {vmax} from '@/utils/rpx';
-import {Divider} from 'react-native-paper';
 import MusicSheet from '@/core/musicSheet';
 import {fontSizeConst} from '@/constants/uiConst';
-import Color from 'color';
 import Button from '@/components/base/button';
 import useColors from '@/hooks/useColors';
 
 import PanelBase from '../base/panelBase';
 import {TextInput} from 'react-native-gesture-handler';
 import {hidePanel} from '../usePanel';
+import Divider from '@/components/base/divider';
 
 interface INewMusicSheetProps {
     defaultName?: string;
@@ -29,7 +28,7 @@ export default function NewMusicSheet(props: INewMusicSheetProps) {
             height={vmax(30)}
             renderBody={() => (
                 <>
-                    <View style={style.opeartions}>
+                    <View style={style.operations}>
                         <Button
                             onPress={() => {
                                 onCancel ? onCancel() : hidePanel();
@@ -60,9 +59,7 @@ export default function NewMusicSheet(props: INewMusicSheetProps) {
                             style.input,
                             {
                                 color: colors.text,
-                                backgroundColor: Color(colors.primary)
-                                    .lighten(0.7)
-                                    .toString(),
+                                backgroundColor: colors.placeholder,
                             },
                         ]}
                         placeholderTextColor={colors.textSecondary}
@@ -79,7 +76,7 @@ const style = StyleSheet.create({
     wrapper: {
         width: rpx(750),
     },
-    opeartions: {
+    operations: {
         width: rpx(750),
         paddingHorizontal: rpx(24),
         flexDirection: 'row',
@@ -88,8 +85,7 @@ const style = StyleSheet.create({
         justifyContent: 'space-between',
     },
     input: {
-        marginTop: rpx(12),
-        marginBottom: rpx(12),
+        margin: rpx(24),
         borderRadius: rpx(12),
         fontSize: fontSizeConst.content,
         lineHeight: fontSizeConst.content * 1.5,

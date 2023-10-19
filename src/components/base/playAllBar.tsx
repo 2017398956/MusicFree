@@ -4,12 +4,11 @@ import rpx from '@/utils/rpx';
 import {iconSizeConst} from '@/constants/uiConst';
 import MusicQueue from '@/core/musicQueue';
 import {ROUTE_PATH, useNavigate} from '@/entry/router';
-import Color from 'color';
-import {IconButton} from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import ThemeText from './themeText';
 import useColors from '@/hooks/useColors';
 import {showPanel} from '../panels/usePanel';
+import IconButton from './iconButton';
 
 interface IProps {
     musicList: IMusic.IMusicItem[] | null;
@@ -21,15 +20,7 @@ export default function (props: IProps) {
     const navigate = useNavigate();
 
     return (
-        <View
-            style={[
-                style.topWrapper,
-                {
-                    backgroundColor: Color(colors.primary)
-                        .alpha(0.15)
-                        .toString(),
-                },
-            ]}>
+        <View style={style.topWrapper}>
             <Pressable
                 style={style.playAll}
                 onPress={() => {
@@ -49,8 +40,9 @@ export default function (props: IProps) {
                 <ThemeText fontWeight="bold">播放全部</ThemeText>
             </Pressable>
             <IconButton
-                icon={'plus-box-multiple-outline'}
-                size={rpx(48)}
+                name={'plus-box-multiple-outline'}
+                sizeType={'normal'}
+                style={style.optionButton}
                 onPress={async () => {
                     showPanel('AddToMusicSheet', {
                         musicItem: musicList ?? [],
@@ -59,8 +51,9 @@ export default function (props: IProps) {
                 }}
             />
             <IconButton
-                icon="playlist-edit"
-                size={rpx(48)}
+                name="playlist-edit"
+                sizeType={'normal'}
+                style={style.optionButton}
                 onPress={async () => {
                     navigate(ROUTE_PATH.MUSIC_LIST_EDITOR, {
                         musicList: musicList,
@@ -77,7 +70,7 @@ export default function (props: IProps) {
 const style = StyleSheet.create({
     /** playall */
     topWrapper: {
-        height: rpx(72),
+        height: rpx(84),
         paddingHorizontal: rpx(24),
         flexDirection: 'row',
         alignItems: 'center',
@@ -89,5 +82,8 @@ const style = StyleSheet.create({
     },
     playAllIcon: {
         marginRight: rpx(12),
+    },
+    optionButton: {
+        marginLeft: rpx(36),
     },
 });

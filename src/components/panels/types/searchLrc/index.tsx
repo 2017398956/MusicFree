@@ -3,7 +3,6 @@ import {StyleSheet, Text, View} from 'react-native';
 import rpx, {vmax, vw} from '@/utils/rpx';
 
 import {fontSizeConst, fontWeightConst} from '@/constants/uiConst';
-import Color from 'color';
 import Button from '@/components/base/button';
 import useColors from '@/hooks/useColors';
 import PanelBase from '../../base/panelBase';
@@ -48,9 +47,7 @@ export default function SearchLrc(props: INewMusicSheetProps) {
                                 style.input,
                                 {
                                     color: colors.text,
-                                    backgroundColor: Color(colors.primary)
-                                        .lighten(0.7)
-                                        .toString(),
+                                    backgroundColor: colors.placeholder,
                                 },
                             ]}
                             placeholderTextColor={colors.textSecondary}
@@ -58,6 +55,7 @@ export default function SearchLrc(props: INewMusicSheetProps) {
                             maxLength={80}
                         />
                         <Button
+                            style={style.searchBtn}
                             onPress={() => {
                                 searchLrc(input, 1);
                             }}>
@@ -99,6 +97,9 @@ const style = StyleSheet.create({
         padding: rpx(12),
         flex: 1,
     },
+    searchBtn: {
+        marginLeft: rpx(12),
+    },
 });
 
 function LyricResultBodyWrapper() {
@@ -119,7 +120,7 @@ function LyricResultBodyWrapper() {
         })(),
     );
 
-    console.log(routes);
+    const colors = useColors();
     return (
         <TabView
             style={globalStyle.fwflex1}
@@ -138,22 +139,29 @@ function LyricResultBodyWrapper() {
                         borderColor: 'transparent',
                     }}
                     tabStyle={{
-                        width: rpx(200),
+                        width: 'auto',
                     }}
-                    renderIndicator={() => null}
                     pressColor="transparent"
+                    inactiveColor={colors.text}
+                    activeColor={colors.primary}
                     renderLabel={({route, focused, color}) => (
                         <Text
                             numberOfLines={1}
                             style={{
+                                width: rpx(160),
                                 fontWeight: focused
                                     ? fontWeightConst.bolder
-                                    : fontWeightConst.bold,
+                                    : fontWeightConst.medium,
                                 color,
+                                textAlign: 'center',
                             }}>
                             {route.title ?? '(未命名)'}
                         </Text>
                     )}
+                    indicatorStyle={{
+                        backgroundColor: colors.primary,
+                        height: rpx(4),
+                    }}
                 />
             )}
             renderScene={sceneMap.current}

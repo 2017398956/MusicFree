@@ -1,7 +1,6 @@
 import React from 'react';
 import {DeviceEventEmitter, StyleSheet, View} from 'react-native';
 import rpx from '@/utils/rpx';
-import {Divider} from 'react-native-paper';
 import MusicQueue from '@/core/musicQueue';
 import MusicSheet from '@/core/musicSheet';
 import ListItem from '@/components/base/listItem';
@@ -29,6 +28,8 @@ import {FlatList} from 'react-native-gesture-handler';
 import musicHistory from '@/core/musicHistory';
 import {showDialog} from '@/components/dialogs/useDialog';
 import {hidePanel, showPanel} from '../usePanel';
+import Divider from '@/components/base/divider';
+import {iconSizeConst} from '@/constants/uiConst';
 
 interface IMusicItemOptionsProps {
     /** 歌曲信息 */
@@ -156,8 +157,11 @@ export default function MusicItemOptions(props: IMusicItemOptionsProps) {
                 ? `已关联歌词 ${associatedLrc.platform}@${associatedLrc.id}`
                 : '关联歌词',
             onPress: async () => {
-                showPanel('AssociateLrc', {
-                    musicItem,
+                // showPanel('AssociateLrc', {
+                //     musicItem,
+                // });
+                showPanel('SearchLrc', {
+                    musicItem: MusicQueue.getCurrentMusicItem(),
                 });
             },
         },
@@ -207,7 +211,7 @@ export default function MusicItemOptions(props: IMusicItemOptionsProps) {
                                 {musicItem?.title}
                             </ThemeText>
                             <ThemeText
-                                fontColor="secondary"
+                                fontColor="textSecondary"
                                 fontSize="description">
                                 {musicItem?.artist}{' '}
                                 {musicItem?.album ? `- ${musicItem.album}` : ''}
@@ -234,19 +238,16 @@ export default function MusicItemOptions(props: IMusicItemOptionsProps) {
                             renderItem={({item}) =>
                                 item.show !== false ? (
                                     <ListItem
-                                        left={{
-                                            icon: {
-                                                name: item.icon,
-                                                size: 'small',
-                                                fontColor: 'normal',
-                                            },
-                                            width: rpx(48),
-                                        }}
-                                        itemPaddingHorizontal={0}
-                                        itemHeight={ITEM_HEIGHT}
-                                        title={item.title}
-                                        onPress={item.onPress}
-                                    />
+                                        withHorizonalPadding
+                                        heightType="small"
+                                        onPress={item.onPress}>
+                                        <ListItem.ListItemIcon
+                                            width={rpx(48)}
+                                            icon={item.icon}
+                                            iconSize={iconSizeConst.small}
+                                        />
+                                        <ListItem.Content title={item.title} />
+                                    </ListItem>
                                 ) : null
                             }
                         />
@@ -269,7 +270,6 @@ const style = StyleSheet.create({
         padding: rpx(24),
     },
     listWrapper: {
-        paddingHorizontal: rpx(24),
         paddingTop: rpx(12),
     },
     artwork: {

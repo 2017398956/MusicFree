@@ -1,26 +1,37 @@
 import React from 'react';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {ColorKey, iconSizeConst, colorMap} from '@/constants/uiConst';
-import {useTheme} from 'react-native-paper';
 import {IconProps} from 'react-native-vector-icons/Icon';
 import {TapGestureHandler} from 'react-native-gesture-handler';
 import {StyleSheet} from 'react-native';
+import useColors from '@/hooks/useColors';
 
-interface IIconButtonProps {
+interface IIconButtonProps extends IconProps {
     name: string;
     style?: IconProps['style'];
-    size?: keyof typeof iconSizeConst;
+    sizeType?: keyof typeof iconSizeConst;
     fontColor?: ColorKey;
+    color?: string;
     onPress?: () => void;
+    accessibilityLabel?: string;
 }
 export function IconButtonWithGesture(props: IIconButtonProps) {
-    const {name, size = 'normal', fontColor = 'normal', onPress, style} = props;
-    const theme = useTheme();
+    const {
+        name,
+        sizeType: size = 'normal',
+        fontColor = 'normal',
+        onPress,
+        style,
+        accessibilityLabel,
+    } = props;
+    const colors = useColors();
     const textSize = iconSizeConst[size];
-    const color = theme.colors[colorMap[fontColor]];
+    const color = colors[colorMap[fontColor]];
     return (
         <TapGestureHandler onActivated={onPress}>
             <Icon
+                accessible
+                accessibilityLabel={accessibilityLabel}
                 name={name}
                 color={color}
                 style={[{minWidth: textSize}, styles.textCenter, style]}
@@ -31,17 +42,16 @@ export function IconButtonWithGesture(props: IIconButtonProps) {
 }
 
 export default function IconButton(props: IIconButtonProps) {
-    const {name, size = 'normal', fontColor = 'normal', onPress, style} = props;
-    const theme = useTheme();
-    const textSize = iconSizeConst[size];
-    const color = theme.colors[colorMap[fontColor]];
+    const {sizeType = 'normal', fontColor = 'normal', style, color} = props;
+    const colors = useColors();
+    const size = iconSizeConst[sizeType];
+
     return (
         <Icon
-            name={name}
-            color={color}
-            onPress={onPress}
-            style={[{minWidth: textSize}, styles.textCenter, style]}
-            size={textSize}
+            {...props}
+            color={color ?? colors[colorMap[fontColor]]}
+            style={[{minWidth: size}, styles.textCenter, style]}
+            size={size}
         />
     );
 }

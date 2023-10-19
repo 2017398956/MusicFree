@@ -1,10 +1,8 @@
 import React from 'react';
-import rpx from '@/utils/rpx';
-import {Dialog} from 'react-native-paper';
-import useColors from '@/hooks/useColors';
 import {FlatList} from 'react-native-gesture-handler';
-import ListItem from '@/components/base/listItem';
 import {hideDialog} from '../useDialog';
+import Dialog from './base';
+import ListItem from '@/components/base/listItem';
 
 interface IKV<T extends string | number = string | number> {
     key: T;
@@ -23,32 +21,29 @@ function isObject(v: string | number | IKV): v is IKV {
 
 export default function RadioDialog(props: IRadioDialogProps) {
     const {title, content, onOk} = props;
-    const colors = useColors();
     return (
-        <Dialog
-            visible={true}
-            onDismiss={hideDialog}
-            style={{backgroundColor: colors.primary}}>
+        <Dialog onDismiss={hideDialog}>
             <Dialog.Title>{title}</Dialog.Title>
-            <Dialog.Content>
-                <FlatList
-                    data={content}
-                    renderItem={({item}) => (
-                        <ListItem
-                            onPress={() => {
-                                if (isObject(item)) {
-                                    onOk?.(item.value);
-                                } else {
-                                    onOk?.(item);
-                                }
-                                hideDialog();
-                            }}
-                            itemHeight={rpx(96)}
+            <FlatList
+                data={content}
+                renderItem={({item}) => (
+                    <ListItem
+                        withHorizonalPadding
+                        onPress={() => {
+                            if (isObject(item)) {
+                                onOk?.(item.value);
+                            } else {
+                                onOk?.(item);
+                            }
+                            hideDialog();
+                        }}
+                        heightType="small">
+                        <ListItem.Content
                             title={isObject(item) ? item.key : item}
                         />
-                    )}
-                />
-            </Dialog.Content>
+                    </ListItem>
+                )}
+            />
         </Dialog>
     );
 }

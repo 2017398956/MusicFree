@@ -18,7 +18,8 @@ export default function () {
             <View style={style.more}>
                 <IconButton
                     name="plus"
-                    size="normal"
+                    sizeType="normal"
+                    accessibilityLabel="新建歌单"
                     onPress={() => {
                         showPanel('NewMusicSheet');
                     }}
@@ -42,6 +43,7 @@ const style = StyleSheet.create({
         height: rpx(72),
         alignItems: 'center',
         justifyContent: 'space-between',
+        paddingHorizontal: rpx(24),
     },
     more: {
         flexDirection: 'row',

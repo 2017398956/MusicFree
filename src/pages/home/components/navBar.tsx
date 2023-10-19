@@ -1,70 +1,66 @@
 import {ROUTE_PATH} from '@/entry/router';
 import {useNavigation} from '@react-navigation/native';
 import React from 'react';
-import {Pressable, StyleSheet} from 'react-native';
+import {Pressable, StyleSheet, View} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import rpx from '@/utils/rpx';
-import {Appbar} from 'react-native-paper';
-import {iconSizeConst} from '@/constants/uiConst';
 import useColors from '@/hooks/useColors';
 import ThemeText from '@/components/base/themeText';
 import Color from 'color';
+import IconButton from '@/components/base/iconButton';
 
 // todo icon: = musicFree(引入自定义字体 居中) search
 export default function NavBar() {
     const navigation = useNavigation<any>();
     const colors = useColors();
     return (
-        <Appbar style={style.appbar}>
-            <Appbar.Action
-                icon="menu"
+        <View style={styles.appbar}>
+            <IconButton
+                name="menu"
+                style={styles.menu}
                 color={colors.text}
-                size={iconSizeConst.normal}
                 onPress={() => {
                     navigation?.openDrawer();
                 }}
             />
+
             <Pressable
                 style={[
-                    style.searchBar,
+                    styles.searchBar,
                     {
-                        backgroundColor: Color(colors.primary)
-                            .alpha(0.7)
-                            .toString(),
+                        backgroundColor: colors.placeholder,
                     },
                 ]}
+                accessible
+                accessibilityLabel="点击这里开始搜索"
                 onPress={() => {
                     navigation.navigate(ROUTE_PATH.SEARCH_PAGE);
                 }}>
                 <Icon
+                    accessible={false}
                     name="magnify"
-                    size={rpx(28)}
-                    color={Color(colors.textSecondary).alpha(0.8).toString()}
-                    style={style.searchIcon}
+                    size={rpx(32)}
+                    color={Color(colors.text).alpha(0.6).toString()}
                 />
                 <ThemeText
+                    accessible={false}
                     fontSize="subTitle"
-                    style={[
-                        style.text,
-                        {
-                            color: Color(colors.textSecondary)
-                                .alpha(0.8)
-                                .toString(),
-                        },
-                    ]}>
+                    style={[styles.text]}>
                     点击这里开始搜索
                 </ThemeText>
             </Pressable>
-        </Appbar>
+        </View>
     );
 }
 
-const style = StyleSheet.create({
+const styles = StyleSheet.create({
     appbar: {
         backgroundColor: 'transparent',
         shadowColor: 'transparent',
         flexDirection: 'row',
+        alignItems: 'center',
         width: '100%',
+        height: rpx(88),
     },
     searchBar: {
         marginHorizontal: rpx(24),
@@ -72,11 +68,15 @@ const style = StyleSheet.create({
         alignItems: 'center',
         flex: 1,
         height: '72%',
+        maxHeight: rpx(64),
         borderRadius: rpx(36),
-        paddingHorizontal: rpx(28),
+        paddingHorizontal: rpx(20),
     },
-    searchIcon: {},
     text: {
         marginLeft: rpx(12),
+        opacity: 0.6,
+    },
+    menu: {
+        marginLeft: rpx(24),
     },
 });

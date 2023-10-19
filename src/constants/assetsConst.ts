@@ -1,6 +1,5 @@
 export const ImgAsset = {
     albumDefault: require('@/assets/imgs/album-default.jpeg'),
-    backgroundDefault: require('@/assets/imgs/background.jpeg'),
     addBackground: require('@/assets/imgs/add-image.png'),
     add: require('@/assets/imgs/add.png'),
     logo: require('@/assets/imgs/logo.jpg'),
@@ -22,8 +21,7 @@ export const ImgAsset = {
         175: require('@/assets/imgs/175x.png'),
         200: require('@/assets/imgs/200x.png'),
     } as any,
-    standardQuality: require('@/assets/imgs/standard-quality.png'),
-    lowQuality: require,
+    transparentBg: require('@/assets/imgs/transparent-bg.png'),
 } as const;
 
 export const SoundAsset = {

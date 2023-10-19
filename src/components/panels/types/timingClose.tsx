@@ -1,7 +1,6 @@
-import React, {useCallback, useEffect, useMemo, useRef} from 'react';
+import React, {useCallback, useEffect, useRef} from 'react';
 import {StyleSheet, View, TouchableOpacity} from 'react-native';
 import rpx from '@/utils/rpx';
-import {Divider, useTheme} from 'react-native-paper';
 import ThemeText from '@/components/base/themeText';
 
 import {setTimingClose, useTimingClose} from '@/utils/timingClose';
@@ -9,9 +8,10 @@ import ThemeSwitch from '@/components/base/switch';
 import timeformat from '@/utils/timeformat';
 import PanelBase from '../base/panelBase';
 import {FlatList} from 'react-native-gesture-handler';
-import Color from 'color';
 import {atom, useAtom, useAtomValue, useSetAtom} from 'jotai';
 import {debounce} from 'lodash';
+import Divider from '@/components/base/divider';
+import useColors from '@/hooks/useColors';
 
 // const hours = Array(24).fill(1).map(_ => _.index);
 // const mins = Array(60).fill(1).map(_ => _.index);
@@ -66,7 +66,7 @@ function CountDownHeader() {
     );
 }
 
-const ITEM_HEIGHT = rpx(72);
+const ITEM_HEIGHT = rpx(82);
 const hours = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
 const minutes = Array(60)
     .fill(0)
@@ -108,6 +108,8 @@ function NumScrollView() {
         <View style={numScrollStyles.customTime}>
             <View style={numScrollStyles.listWrapper}>
                 <FlatList
+                    showsVerticalScrollIndicator={false}
+                    overScrollMode="never"
                     ListHeaderComponent={EmptyItem}
                     ListFooterComponent={EmptyItem}
                     getItemLayout={(_, index) => ({
@@ -143,6 +145,8 @@ function NumScrollView() {
                     ref={ref => {
                         minListRef.current = ref;
                     }}
+                    showsVerticalScrollIndicator={false}
+                    overScrollMode="never"
                     ListHeaderComponent={EmptyItem}
                     ListFooterComponent={EmptyItem}
                     style={[numScrollStyles.list, numScrollStyles.minList]}
@@ -192,6 +196,7 @@ const numScrollStyles = StyleSheet.create({
     },
     listWrapper: {
         flexDirection: 'row',
+        width: '100%',
     },
     emptyItem: {
         width: '100%',
@@ -208,15 +213,15 @@ const numScrollStyles = StyleSheet.create({
     },
     item: {
         height: ITEM_HEIGHT,
-        width: rpx(120),
+        width: '100%',
         textAlign: 'center',
         textAlignVertical: 'center',
     },
     topBanner: {
         position: 'absolute',
-        height: ITEM_HEIGHT,
+        height: rpx(1),
         width: '100%',
-        top: 0,
+        top: ITEM_HEIGHT - rpx(0.5),
         left: 0,
         backgroundColor: '#aaaaaa33',
         borderBottomColor: '#666666',
@@ -224,22 +229,22 @@ const numScrollStyles = StyleSheet.create({
     },
     bottomBanner: {
         position: 'absolute',
-        height: ITEM_HEIGHT,
+        height: rpx(1),
         width: '100%',
         borderTopColor: '#666666',
         borderTopWidth: 1,
-        bottom: 0,
+        bottom: ITEM_HEIGHT + rpx(0.5),
         left: 0,
         backgroundColor: '#aaaaaa33',
     },
 });
 
 export default function TimingClose() {
-    const {colors} = useTheme();
-    const highlightBgColor = useMemo(
-        () => Color(colors.textHighlight).alpha(0.3).toString(),
-        [colors],
-    );
+    const colors = useColors();
+    // const highlightBgColor = useMemo(
+    //     () => Color(colors.textHighlight).alpha(0.3).toString(),
+    //     [colors],
+    // );
 
     const [selectedShortCut, setSelectedShortCut] = useAtom(shortCutAtom);
 
@@ -287,15 +292,15 @@ export default function TimingClose() {
                                             selectedShortCut === time
                                                 ? {
                                                       backgroundColor:
-                                                          highlightBgColor,
+                                                          colors.primary,
                                                   }
                                                 : undefined,
                                         ]}>
                                         <ThemeText
                                             fontColor={
                                                 selectedShortCut === time
-                                                    ? 'highlight'
-                                                    : 'normal'
+                                                    ? 'appBarText'
+                                                    : 'text'
                                             }>
                                             {time ? `${time}min` : '自定义'}
                                         </ThemeText>
@@ -325,7 +330,6 @@ const style = StyleSheet.create({
         width: rpx(750),
         flex: 1,
         marginTop: rpx(64),
-        paddingHorizontal: rpx(24),
         flexDirection: 'column',
         justifyContent: 'flex-start',
         alignItems: 'center',
@@ -333,6 +337,7 @@ const style = StyleSheet.create({
     timesGroup: {
         width: rpx(702),
         height: rpx(108),
+        paddingHorizontal: rpx(24),
         // backgroundColor: 'blue',
         flexDirection: 'row',
         alignItems: 'center',

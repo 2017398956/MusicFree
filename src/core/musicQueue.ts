@@ -23,6 +23,7 @@ import LocalMusicSheet from './localMusicSheet';
 import {SoundAsset} from '@/constants/assetsConst';
 import {getQualityOrder} from '@/utils/qualities';
 import musicHistory from './musicHistory';
+import getUrlExt from '@/utils/getUrlExt';
 
 enum MusicRepeatMode {
     /** 随机播放 */
@@ -82,6 +83,7 @@ const setup = async () => {
             Config.get('setting.basic.defaultPlayQuality') ?? 'standard';
         if (config?.track) {
             currentIndex = findMusicIndex(config.track);
+
             // todo： 想想是在这里还是加在下边的play
             if (currentIndex !== -1) {
                 // todo: 这样写不好，简介引入了setup里面musicQueue和pluginManager的初始化时序关系 并且阻塞启动时间，因此这里如果失败不重试
@@ -95,6 +97,7 @@ const setup = async () => {
                         ...(newSource ?? {}),
                     } as IMusic.IMusicItem;
                     draft[currentIndex] = musicItem;
+                    config.track = musicItem;
                 });
             }
             // todo： 判空，理论上不会发生
@@ -455,6 +458,10 @@ const play = async (musicItem?: IMusic.IMusicItem, forcePlay?: boolean) => {
                 currentQuality = 'standard';
                 currentQualityStateMapper.notify();
             }
+            if (getUrlExt(source.url) === '.m3u8') {
+                // @ts-ignore
+                source.type = 'hls';
+            }
             //#endregion
             // 获取音乐信息
             track = mergeProps(_musicItem, source) as IMusic.IMusicItem;
@@ -489,6 +496,7 @@ const play = async (musicItem?: IMusic.IMusicItem, forcePlay?: boolean) => {
             }
         } catch (e) {
             // 播放失败
+            console.log(e);
             if (isSameMediaItem(_musicItem, musicQueue[currentIndex])) {
                 await _playFail();
             }

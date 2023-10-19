@@ -14,11 +14,9 @@ import {readdir} from 'react-native-fs';
 import {qualityKeys, qualityText} from '@/utils/qualities';
 import {clearLog, getErrorLogContent} from '@/utils/log';
 import {ScrollView} from 'react-native-gesture-handler';
-import {Paragraph} from 'react-native-paper';
 import {showDialog} from '@/components/dialogs/useDialog';
 import {showPanel} from '@/components/panels/usePanel';
-
-const ITEM_HEIGHT = rpx(96);
+import Paragraph from '@/components/base/paragraph';
 
 function createSwitch(title: string, changeKey: IConfigPaths, value: boolean) {
     const onPress = () => {
@@ -27,7 +25,7 @@ function createSwitch(title: string, changeKey: IConfigPaths, value: boolean) {
     return {
         title,
         onPress,
-        right: () => <ThemeSwitch value={value} onValueChange={onPress} />,
+        right: <ThemeSwitch value={value} onValueChange={onPress} />,
     };
 }
 
@@ -84,7 +82,7 @@ export default function BasicSetting() {
         };
         return {
             title,
-            right: () => (
+            right: (
                 <ThemeText style={style.centerText}>
                     {valueMap ? valueMap[value] : value}
                 </ThemeText>
@@ -163,6 +161,11 @@ export default function BasicSetting() {
                         lyric: '默认展示歌词页',
                     },
                 ),
+                createSwitch(
+                    '处于歌曲详情页时常亮',
+                    'setting.basic.musicDetailAwake',
+                    basicSetting?.musicDetailAwake ?? false,
+                ),
             ],
         },
         {
@@ -170,7 +173,7 @@ export default function BasicSetting() {
             data: [
                 {
                     title: '下载路径',
-                    right: () => (
+                    right: (
                         <ThemeText
                             fontSize="subTitle"
                             style={style.centerText}
@@ -246,7 +249,7 @@ export default function BasicSetting() {
             data: [
                 {
                     title: '音乐缓存上限',
-                    right: () => (
+                    right: (
                         <ThemeText style={style.centerText}>
                             {basicSetting?.maxCacheSize
                                 ? sizeFormatter(basicSetting.maxCacheSize)
@@ -278,7 +281,7 @@ export default function BasicSetting() {
 
                 {
                     title: '清除音乐缓存',
-                    right: () => (
+                    right: (
                         <ThemeText style={style.centerText}>
                             {sizeFormatter(cacheSize.music)}
                         </ThemeText>
@@ -297,7 +300,7 @@ export default function BasicSetting() {
                 },
                 {
                     title: '清除歌词缓存',
-                    right: () => (
+                    right: (
                         <ThemeText style={style.centerText}>
                             {sizeFormatter(cacheSize.lyric)}
                         </ThemeText>
@@ -316,7 +319,7 @@ export default function BasicSetting() {
                 },
                 {
                     title: '清除图片缓存',
-                    right: () => (
+                    right: (
                         <ThemeText style={style.centerText}>
                             {sizeFormatter(cacheSize.image)}
                         </ThemeText>
@@ -391,19 +394,27 @@ export default function BasicSetting() {
                 sections={basicOptions}
                 renderSectionHeader={({section}) => (
                     <View style={style.sectionHeader}>
-                        <ThemeText fontSize="subTitle" fontColor="secondary">
+                        <ThemeText
+                            fontSize="subTitle"
+                            fontColor="textSecondary"
+                            fontWeight="bold">
                             {section.title}
                         </ThemeText>
                     </View>
                 )}
-                renderItem={({item}) => (
-                    <ListItem
-                        itemHeight={ITEM_HEIGHT}
-                        title={item.title}
-                        right={item.right}
-                        onPress={item.onPress}
-                    />
-                )}
+                renderItem={({item}) => {
+                    const Right = item.right;
+
+                    return (
+                        <ListItem
+                            withHorizonalPadding
+                            heightType="small"
+                            onPress={item.onPress}>
+                            <ListItem.Content title={item.title} />
+                            {Right}
+                        </ListItem>
+                    );
+                }}
             />
         </View>
     );
@@ -420,7 +431,10 @@ const style = StyleSheet.create({
         maxWidth: rpx(400),
     },
     sectionHeader: {
-        paddingHorizontal: rpx(36),
-        marginTop: rpx(48),
+        paddingHorizontal: rpx(24),
+        height: rpx(72),
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: rpx(20),
     },
 });

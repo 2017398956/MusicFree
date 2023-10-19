@@ -224,7 +224,6 @@ export default function Lyric() {
                     )}
                 />
             ) : (
-                // TODO 搜索歌词
                 <View style={globalStyle.fullCenter}>
                     <ThemeText style={style.highlightItem}>暂无歌词</ThemeText>
                     <TapGestureHandler
@@ -258,7 +257,7 @@ export default function Lyric() {
 
                     <IconButtonWithGesture
                         style={style.playIcon}
-                        size="small"
+                        sizeType="small"
                         name="play"
                         onPress={onLyricSeekPress}
                     />
