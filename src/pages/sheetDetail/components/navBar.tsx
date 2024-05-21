@@ -76,6 +76,14 @@ export default function () {
                                         value: 'artz2a',
                                         key: '作者名Z-A',
                                     },
+                                    {
+                                        value: 'time',
+                                        key: '加入歌单时间',
+                                    },
+                                    {
+                                        value: 'time-rev',
+                                        key: '加入歌单时间（逆序）',
+                                    },
                                 ],
                                 title: '排序',
                                 async onOk(value) {
@@ -94,6 +102,7 @@ export default function () {
                         onPress() {
                             navigation.navigate(ROUTE_PATH.SEARCH_MUSIC_LIST, {
                                 musicList: musicSheet?.musicList,
+                                musicSheet: musicSheet,
                             });
                         },
                     },

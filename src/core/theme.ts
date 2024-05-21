@@ -32,7 +32,7 @@ export const lightTheme = {
         success: '#08A34C',
         danger: '#FC5F5F',
         info: '#0A95C8',
-        card: '#e0e0e033',
+        card: '#e2e2e288',
     },
 };
 
@@ -60,7 +60,7 @@ export const darkTheme = {
         success: '#08A34C',
         danger: '#FC5F5F',
         info: '#0A95C8',
-        card: '#33333366',
+        card: '#33333388',
     },
 };
 
@@ -135,10 +135,10 @@ function setTheme(
             ...(currentBg ?? {}),
             url: undefined,
         };
-        if (extra.background.blur) {
+        if (typeof extra.background.blur === 'number') {
             newBg.blur = extra.background.blur;
         }
-        if (extra.background.opacity) {
+        if (typeof extra.background.opacity === 'number') {
             newBg.opacity = extra.background.opacity;
         }
         if (extra.background.url) {
@@ -163,7 +163,7 @@ function setColors(colors: Partial<CustomizedColors>) {
                 ...colors,
             },
         };
-
+        Config.set('setting.theme.customColors', newTheme.colors);
         Config.set('setting.theme.colors', newTheme.colors);
         themeStore.setValue(newTheme);
     }
@@ -177,11 +177,11 @@ function setBackground(backgroundInfo: Partial<IBackgroundInfo>) {
             blur: 20,
         }),
     };
-    if (backgroundInfo.blur) {
+    if (typeof backgroundInfo.blur === 'number') {
         Config.set('setting.theme.backgroundBlur', backgroundInfo.blur);
         newBgInfo.blur = backgroundInfo.blur;
     }
-    if (backgroundInfo.opacity) {
+    if (typeof backgroundInfo.opacity === 'number') {
         Config.set('setting.theme.backgroundOpacity', backgroundInfo.opacity);
         newBgInfo.opacity = backgroundInfo.opacity;
     }

@@ -12,6 +12,7 @@ import {atom, useAtom, useAtomValue, useSetAtom} from 'jotai';
 import {debounce} from 'lodash';
 import Divider from '@/components/base/divider';
 import useColors from '@/hooks/useColors';
+import PanelHeader from '../base/panelHeader';
 
 // const hours = Array(24).fill(1).map(_ => _.index);
 // const mins = Array(60).fill(1).map(_ => _.index);
@@ -39,13 +40,19 @@ function CountDownHeader() {
 
     return (
         <View style={style.header}>
-            <ThemeText fontWeight="medium">
-                {countDown === null
-                    ? '定时关闭'
-                    : `倒计时 ${timeformat(countDown)}`}
-            </ThemeText>
+            <PanelHeader
+                hideDivider
+                hideButtons
+                title={
+                    countDown === null
+                        ? '定时关闭'
+                        : `倒计时 ${timeformat(countDown)}`
+                }
+            />
+
             <ThemeSwitch
                 value={countDown !== null}
+                style={style.switch}
                 onValueChange={val => {
                     if (val === true) {
                         if (shortCutValue) {
@@ -117,6 +124,7 @@ function NumScrollView() {
                         offset: ITEM_HEIGHT * index,
                         index,
                     })}
+                    fadingEdgeLength={100}
                     onMomentumScrollEnd={e => {
                         selectedHour = `${(
                             e.nativeEvent.contentOffset.y / ITEM_HEIGHT
@@ -147,6 +155,7 @@ function NumScrollView() {
                     }}
                     showsVerticalScrollIndicator={false}
                     overScrollMode="never"
+                    fadingEdgeLength={100}
                     ListHeaderComponent={EmptyItem}
                     ListFooterComponent={EmptyItem}
                     style={[numScrollStyles.list, numScrollStyles.minList]}
@@ -318,7 +327,6 @@ export default function TimingClose() {
 
 const style = StyleSheet.create({
     header: {
-        marginTop: rpx(36),
         width: rpx(750),
         paddingHorizontal: rpx(24),
         height: rpx(90),
@@ -333,6 +341,10 @@ const style = StyleSheet.create({
         flexDirection: 'column',
         justifyContent: 'flex-start',
         alignItems: 'center',
+    },
+    switch: {
+        position: 'absolute',
+        right: rpx(32),
     },
     timesGroup: {
         width: rpx(702),

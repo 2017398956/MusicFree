@@ -1,7 +1,7 @@
 import React from 'react';
 import {StyleSheet} from 'react-native';
 import rpx from '@/utils/rpx';
-import ActionButton from './ActionButton';
+import ActionButton from '../ActionButton';
 import {ROUTE_PATH, useNavigate} from '@/entry/router';
 import {ScrollView} from 'react-native-gesture-handler';
 
@@ -61,6 +61,7 @@ export default function Operations(props: IOperationsProps) {
                     ? style.wrapper
                     : style.horizonalWrapper
             }
+            scrollEnabled={orientation === 'horizonal'}
             showsHorizontalScrollIndicator={false}
             horizontal={orientation === 'vertical'}
             contentContainerStyle={
@@ -69,10 +70,7 @@ export default function Operations(props: IOperationsProps) {
                     : style.horizonalContentWrapper
             }>
             {actionButtons.map(action => (
-                <>
-                    {/* {index !== 0 ? <Divider vertical={orientation === 'vertical'}></Divider> : null} */}
-                    <ActionButton key={action.title} {...action} />
-                </>
+                <ActionButton key={action.title} {...action} />
             ))}
         </ScrollView>
     );
@@ -84,7 +82,6 @@ const style = StyleSheet.create({
         marginBottom: rpx(20),
         flexGrow: 0,
         flexShrink: 0,
-        marginRight: rpx(24),
     },
     horizonalWrapper: {
         marginTop: rpx(20),
@@ -101,5 +98,6 @@ const style = StyleSheet.create({
         width: rpx(170),
         flexDirection: 'column',
         paddingVertical: rpx(24),
+        paddingLeft: rpx(15),
     },
 });

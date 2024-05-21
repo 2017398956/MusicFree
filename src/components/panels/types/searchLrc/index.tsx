@@ -12,20 +12,25 @@ import PluginManager from '@/core/pluginManager';
 import {SceneMap, TabBar, TabView} from 'react-native-tab-view';
 import LyricList from './LyricList';
 import globalStyle from '@/constants/globalStyle';
+import NoPlugin from '@/components/base/noPlugin';
 
 interface INewMusicSheetProps {
-    musicItem: IMusic.IMusicItem;
+    musicItem?: IMusic.IMusicItem | null;
 }
 
 export default function SearchLrc(props: INewMusicSheetProps) {
     const {musicItem} = props;
-    const [input, setInput] = useState(musicItem.title);
+    const [input, setInput] = useState(
+        musicItem?.alias ?? musicItem?.title ?? '',
+    );
     const colors = useColors();
 
     const searchLrc = useSearchLrc();
 
     useEffect(() => {
-        searchLrc(musicItem.title, 1);
+        if (musicItem) {
+            searchLrc(musicItem.alias || musicItem.title, 1);
+        }
     }, []);
 
     return (
@@ -105,10 +110,12 @@ const style = StyleSheet.create({
 function LyricResultBodyWrapper() {
     const [index, setIndex] = useState(0);
 
-    const routes = PluginManager.getSortedSearchablePlugins('lyric').map(_ => ({
-        key: _.hash,
-        title: _.name,
-    }));
+    const routes = PluginManager.getSortedSearchablePlugins('lyric')?.map?.(
+        _ => ({
+            key: _.hash,
+            title: _.name,
+        }),
+    );
 
     const sceneMap = useRef(
         (() => {
@@ -121,7 +128,7 @@ function LyricResultBodyWrapper() {
     );
 
     const colors = useColors();
-    return (
+    return routes?.length ? (
         <TabView
             style={globalStyle.fwflex1}
             lazy
@@ -168,5 +175,7 @@ function LyricResultBodyWrapper() {
             onIndexChange={setIndex}
             initialLayout={{width: vw(100)}}
         />
+    ) : (
+        <NoPlugin notSupportType="搜索歌词" />
     );
 }

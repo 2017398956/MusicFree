@@ -1,25 +1,20 @@
 import React, {memo, useEffect, useState} from 'react';
-import {Keyboard, Pressable, StyleSheet, Text, View} from 'react-native';
+import {Keyboard, StyleSheet, View} from 'react-native';
 import rpx from '@/utils/rpx';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import MusicQueue from '@/core/musicQueue';
 import {CircularProgressBase} from 'react-native-circular-progress-indicator';
-import {ROUTE_PATH, useNavigate} from '@/entry/router';
 
-import musicIsPaused from '@/utils/musicIsPaused';
-
-import Color from 'color';
-import ThemeText from '../base/themeText';
-import {ImgAsset} from '@/constants/assetsConst';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {showPanel} from '../panels/usePanel';
-import FastImage from '../base/fastImage';
 import useColors from '@/hooks/useColors';
 import IconButton from '../base/iconButton';
+import TrackPlayer from '@/core/trackPlayer';
+import {musicIsPaused} from '@/utils/trackUtils';
+import MusicInfo from './musicInfo';
 
 function CircularPlayBtn() {
-    const progress = MusicQueue.useProgress();
-    const musicState = MusicQueue.usePlaybackState();
+    const progress = TrackPlayer.useProgress();
+    const musicState = TrackPlayer.useMusicState();
     const colors = useColors();
 
     const isPaused = musicIsPaused(musicState);
@@ -39,15 +34,15 @@ function CircularPlayBtn() {
             activeStrokeColor={colors.musicBarText}
             inActiveStrokeColor={colors.textSecondary}>
             <IconButton
-                accessibilityLabel={isPaused ? '播放' : '暂停'}
+                accessibilityLabel={'播放或暂停歌曲'}
                 name={isPaused ? 'play' : 'pause'}
                 sizeType={'normal'}
                 color={colors.musicBarText}
                 onPress={async () => {
                     if (isPaused) {
-                        await MusicQueue.play();
+                        await TrackPlayer.play();
                     } else {
-                        await MusicQueue.pause();
+                        await TrackPlayer.pause();
                     }
                 }}
             />
@@ -55,11 +50,10 @@ function CircularPlayBtn() {
     );
 }
 function MusicBar() {
-    const musicItem = MusicQueue.useCurrentMusicItem();
+    const musicItem = TrackPlayer.useCurrentMusic();
 
     const [showKeyboard, setKeyboardStatus] = useState(false);
 
-    const navigate = useNavigate();
     const colors = useColors();
     const safeAreaInsets = useSafeAreaInsets();
 
@@ -80,46 +74,21 @@ function MusicBar() {
     return (
         <>
             {musicItem && !showKeyboard && (
-                <Pressable
+                <View
                     style={[
                         style.wrapper,
                         {
                             backgroundColor: colors.musicBar,
-                            paddingLeft: safeAreaInsets.left + rpx(24),
                             paddingRight: safeAreaInsets.right + rpx(24),
                         },
                     ]}
                     accessible
                     accessibilityLabel={`歌曲: ${musicItem.title} 歌手: ${musicItem.artist}`}
-                    onPress={() => {
-                        navigate(ROUTE_PATH.MUSIC_DETAIL);
-                    }}>
-                    <View style={style.artworkWrapper}>
-                        <FastImage
-                            style={style.artworkImg}
-                            uri={musicItem.artwork}
-                            emptySrc={ImgAsset.albumDefault}
-                        />
-                    </View>
-                    <Text
-                        ellipsizeMode="tail"
-                        accessible={false}
-                        style={style.textWrapper}
-                        numberOfLines={1}>
-                        <ThemeText fontSize="content" fontColor="musicBarText">
-                            {musicItem?.title}
-                        </ThemeText>
-                        {musicItem?.artist && (
-                            <ThemeText
-                                fontSize="description"
-                                color={Color(colors.musicBarText)
-                                    .alpha(0.6)
-                                    .toString()}>
-                                {' '}
-                                -{musicItem.artist}
-                            </ThemeText>
-                        )}
-                    </Text>
+                    // onPress={() => {
+                    //     navigate(ROUTE_PATH.MUSIC_DETAIL);
+                    // }}
+                >
+                    <MusicInfo musicItem={musicItem} />
                     <View style={style.actionGroup}>
                         <CircularPlayBtn />
                         <Icon
@@ -136,7 +105,7 @@ function MusicBar() {
                             ]}
                         />
                     </View>
-                </Pressable>
+                </View>
             )}
         </>
     );
@@ -150,16 +119,7 @@ const style = StyleSheet.create({
         height: rpx(132),
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: rpx(24),
-    },
-    artworkWrapper: {
-        height: rpx(120),
-        width: rpx(120),
-        justifyContent: 'center',
-    },
-    textWrapper: {
-        flexGrow: 1,
-        flexShrink: 1,
+        paddingRight: rpx(24),
     },
     actionGroup: {
         width: rpx(200),
@@ -169,10 +129,5 @@ const style = StyleSheet.create({
     },
     actionIcon: {
         marginLeft: rpx(36),
-    },
-    artworkImg: {
-        width: rpx(96),
-        height: rpx(96),
-        borderRadius: rpx(48),
     },
 });

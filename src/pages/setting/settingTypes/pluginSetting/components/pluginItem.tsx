@@ -11,6 +11,8 @@ import rpx from '@/utils/rpx';
 import {StyleSheet, View} from 'react-native';
 import ThemeText from '@/components/base/themeText';
 import IconTextButton from '@/components/base/iconTextButton';
+import {PluginMeta} from '@/core/pluginMeta';
+import ThemeSwitch from '@/components/base/switch';
 
 interface IPluginItemProps {
     plugin: Plugin;
@@ -71,6 +73,7 @@ export default function PluginItem(props: IPluginItemProps) {
             icon: 'import',
             onPress() {
                 showPanel('SimpleInput', {
+                    title: '导入单曲',
                     placeholder: '输入目标歌曲',
                     hints: plugin.instance.hints?.importMusicItem,
                     maxLength: 1000,
@@ -102,6 +105,7 @@ export default function PluginItem(props: IPluginItemProps) {
             icon: 'database-import-outline',
             onPress() {
                 showPanel('SimpleInput', {
+                    title: '导入歌单',
                     placeholder: '输入目标歌单',
                     hints: plugin.instance.hints?.importMusicSheet,
                     maxLength: 1000,
@@ -129,6 +133,29 @@ export default function PluginItem(props: IPluginItemProps) {
             },
             show: !!plugin.instance.importMusicSheet,
         },
+        {
+            title: '用户变量',
+            icon: 'application-variable-outline',
+            onPress() {
+                if (Array.isArray(plugin.instance.userVariables)) {
+                    showPanel('SetUserVariables', {
+                        async onOk(newValue, closePanel) {
+                            await PluginMeta.setPluginMetaProp(
+                                plugin,
+                                'userVariables',
+                                newValue,
+                            );
+                            Toast.success('设置成功~');
+                            closePanel();
+                        },
+                        variables: plugin.instance.userVariables,
+                        initValues:
+                            PluginMeta.getPluginMeta(plugin)?.userVariables,
+                    });
+                }
+            },
+            show: Array.isArray(plugin.instance.userVariables),
+        },
     ];
 
     return (
@@ -140,10 +167,32 @@ export default function PluginItem(props: IPluginItemProps) {
                 },
             ]}>
             <View style={styles.header}>
-                <ThemeText fontSize="title">{plugin.name}</ThemeText>
-                <ThemeText style={styles.version} fontSize="subTitle">
-                    (版本号: {plugin.instance.version})
+                <ThemeText
+                    style={styles.headerPluginName}
+                    numberOfLines={1}
+                    fontSize="title">
+                    {plugin.name}
                 </ThemeText>
+                <ThemeSwitch
+                    value={plugin.state === 'disabled' ? false : true}
+                    onValueChange={val => {
+                        PluginManager.setPluginEnabled(plugin, val);
+                    }}
+                />
+            </View>
+            <View style={styles.description}>
+                <ThemeText fontSize="subTitle" fontColor="textSecondary">
+                    版本号: {plugin.instance.version}
+                </ThemeText>
+                {plugin.instance.author ? (
+                    <ThemeText
+                        fontSize="subTitle"
+                        fontColor="textSecondary"
+                        numberOfLines={1}
+                        style={styles.author}>
+                        作者: {plugin.instance.author}
+                    </ThemeText>
+                ) : null}
             </View>
             <View style={styles.contents}>
                 {options.map((it, index) =>
@@ -213,13 +262,23 @@ const styles = StyleSheet.create({
         marginTop: rpx(36),
     },
     header: {
-        marginBottom: rpx(24),
         paddingHorizontal: rpx(16),
         flexDirection: 'row',
         alignItems: 'center',
     },
-    version: {
+    headerPluginName: {
+        flexShrink: 1,
+        flexGrow: 1,
+    },
+    author: {
         marginLeft: rpx(24),
+        flexShrink: 1,
+        flexGrow: 1,
+    },
+    description: {
+        marginHorizontal: rpx(16),
+        marginVertical: rpx(24),
+        flexDirection: 'row',
     },
     contents: {
         flexDirection: 'row',

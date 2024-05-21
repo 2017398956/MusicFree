@@ -1,5 +1,5 @@
 import React, {memo} from 'react';
-import {StyleSheet, View} from 'react-native';
+import {StyleSheet, View, BackHandler, Platform} from 'react-native';
 import rpx from '@/utils/rpx';
 import {DrawerContentScrollView} from '@react-navigation/drawer';
 import ListItem from '@/components/base/listItem';
@@ -8,12 +8,13 @@ import ThemeText from '@/components/base/themeText';
 import PageBackground from '@/components/base/pageBackground';
 import DeviceInfo from 'react-native-device-info';
 import NativeUtils from '@/native/utils';
-import MusicQueue from '@/core/musicQueue';
 import {useTimingClose} from '@/utils/timingClose';
-
 import timeformat from '@/utils/timeformat';
 import {showPanel} from '@/components/panels/usePanel';
 import Divider from '@/components/base/divider';
+import TrackPlayer from '@/core/trackPlayer';
+import deviceInfoModule from 'react-native-device-info';
+import {checkUpdateAndShowResult} from '@/hooks/useCheckUpdate';
 
 const ITEM_HEIGHT = rpx(108);
 function HomeDrawer(props: any) {
@@ -34,7 +35,7 @@ function HomeDrawer(props: any) {
         },
         {
             icon: 'language-javascript',
-            title: '插件设置',
+            title: '插件管理',
             onPress: () => {
                 navigateToSetting('plugin');
             },
@@ -56,14 +57,17 @@ function HomeDrawer(props: any) {
                 navigateToSetting('backup');
             },
         },
-        {
-            icon: 'information-outline',
-            title: '关于',
+    ];
+
+    if (Platform.OS === 'android') {
+        otherSetting.push({
+            icon: 'cellphone-key',
+            title: '权限管理',
             onPress: () => {
-                navigateToSetting('about');
+                navigate(ROUTE_PATH.PERMISSIONS);
             },
-        },
-    ] as const;
+        });
+    }
 
     return (
         <>
@@ -76,7 +80,7 @@ function HomeDrawer(props: any) {
                     {/* <IconButton icon={'qrcode-scan'} size={rpx(36)} /> */}
                 </View>
                 <View style={style.card}>
-                    <ListItem withHorizonalPadding heightType="small">
+                    <ListItem withHorizonalPadding heightType="smallest">
                         <ListItem.ListItemText
                             fontSize="subTitle"
                             fontWeight="bold">
@@ -97,7 +101,7 @@ function HomeDrawer(props: any) {
                     ))}
                 </View>
                 <View style={style.card}>
-                    <ListItem withHorizonalPadding heightType="small">
+                    <ListItem withHorizonalPadding heightType="smallest">
                         <ListItem.ListItemText
                             fontSize="subTitle"
                             fontWeight="bold">
@@ -119,11 +123,65 @@ function HomeDrawer(props: any) {
                     ))}
                 </View>
 
+                <View style={style.card}>
+                    <ListItem withHorizonalPadding heightType="smallest">
+                        <ListItem.ListItemText
+                            fontSize="subTitle"
+                            fontWeight="bold">
+                            软件
+                        </ListItem.ListItemText>
+                    </ListItem>
+
+                    <ListItem
+                        withHorizonalPadding
+                        key={'update'}
+                        onPress={() => {
+                            checkUpdateAndShowResult(true);
+                        }}>
+                        <ListItem.ListItemIcon
+                            icon={'update'}
+                            width={rpx(48)}
+                        />
+                        <ListItem.Content title="检查更新" />
+                        <ListItem.ListItemText
+                            position="right"
+                            fontSize="subTitle">
+                            {`当前版本: ${deviceInfoModule.getVersion()}`}
+                        </ListItem.ListItemText>
+                    </ListItem>
+                    <ListItem
+                        withHorizonalPadding
+                        key={'about'}
+                        onPress={() => {
+                            navigateToSetting('about');
+                        }}>
+                        <ListItem.ListItemIcon
+                            icon={'information-outline'}
+                            width={rpx(48)}
+                        />
+                        <ListItem.Content
+                            title={`关于 ${deviceInfoModule.getApplicationName()}`}
+                        />
+                    </ListItem>
+                </View>
+
                 <Divider />
                 <ListItem
                     withHorizonalPadding
+                    onPress={() => {
+                        // 仅安卓生效
+                        BackHandler.exitApp();
+                    }}>
+                    <ListItem.ListItemIcon
+                        icon={'home-outline'}
+                        width={rpx(48)}
+                    />
+                    <ListItem.Content title={'返回桌面'} />
+                </ListItem>
+                <ListItem
+                    withHorizonalPadding
                     onPress={async () => {
-                        await MusicQueue.reset();
+                        await TrackPlayer.reset();
                         NativeUtils.exitApp();
                     }}>
                     <ListItem.ListItemIcon icon={'power'} width={rpx(48)} />

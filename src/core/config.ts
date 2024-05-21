@@ -8,6 +8,7 @@ type ExceptionType = IMusic.IMusicItem | IMusic.IMusicItem[] | IMusic.IQuality;
 interface IConfig {
     setting: {
         basic: {
+            autoPlayWhenAppStart: boolean;
             /** 使用移动网络播放 */
             useCelluarNetworkPlay: boolean;
             /** 使用移动网络下载 */
@@ -47,7 +48,35 @@ interface IConfig {
                 traceLog: boolean;
                 devLog: boolean;
             };
+            /** 最大历史记录条目 */
             maxHistoryLen: number;
+            /** 启动时自动更新插件 */
+            autoUpdatePlugin: boolean;
+            // 不检查插件版本号
+            notCheckPluginVersion: boolean;
+            /** 关联歌词方式 */
+            associateLyricType: 'input' | 'search';
+            // 是否展示退出按钮
+            showExitOnNotification: boolean;
+            // 本地歌单添加歌曲顺序
+            musicOrderInLocalSheet: 'start' | 'end';
+            // 自动换源
+            tryChangeSourceWhenPlayFail: boolean;
+        };
+        /** 歌词 */
+        lyric: {
+            showStatusBarLyric: boolean;
+            topPercent: number;
+            leftPercent: number;
+            align: number;
+            color: string;
+            backgroundColor: string;
+            widthPercent: number;
+            fontSize: number;
+            // 详情页的字体大小
+            detailFontSize: number;
+            // 自动搜索歌词
+            autoSearchLyric: boolean;
         };
 
         /** 主题 */
@@ -56,12 +85,22 @@ interface IConfig {
             backgroundOpacity: number;
             backgroundBlur: number;
             colors: CustomizedColors;
+            customColors?: CustomizedColors;
             followSystem: boolean;
             selectedTheme: string;
         };
 
+        backup: {
+            resumeMode: 'append' | 'overwrite';
+        };
+
         plugin: {
             subscribeUrl: string;
+        };
+        webdav: {
+            url: string;
+            username: string;
+            password: string;
         };
     };
     status: {

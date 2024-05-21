@@ -29,14 +29,14 @@ const iconSizeConst = {
     light: rpx(40),
     normal: rpx(48),
     big: rpx(64),
+    large: rpx(88),
 };
 
-type ColorKey = 'normal' | 'secondary' | 'highlight' | 'headerText' | 'primary';
+type ColorKey = 'normal' | 'secondary' | 'highlight' | 'primary';
 const colorMap: Record<ColorKey, keyof CustomizedColors> = {
     normal: 'text',
     secondary: 'textSecondary',
     highlight: 'textHighlight',
-    headerText: 'headerText',
     primary: 'primary',
 } as const;
 

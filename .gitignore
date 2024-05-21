@@ -69,3 +69,5 @@ keystore.properties
 tmp/
 scripts/
 yarn.lock
+
+*.log

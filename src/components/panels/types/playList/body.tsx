@@ -1,8 +1,6 @@
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useMemo, useRef} from 'react';
 import {Pressable, StyleSheet, Text, View} from 'react-native';
-import rpx, {vh} from '@/utils/rpx';
-import MusicQueue from '@/core/musicQueue';
-import {FlatList} from 'react-native-gesture-handler';
+import rpx from '@/utils/rpx';
 import Tag from '@/components/base/tag';
 import ThemeText from '@/components/base/themeText';
 import {fontSizeConst} from '@/constants/uiConst';
@@ -12,29 +10,28 @@ import IconButton from '@/components/base/iconButton';
 import Loading from '@/components/base/loading';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import useColors from '@/hooks/useColors';
+import TrackPlayer from '@/core/trackPlayer';
+import {FlashList} from '@shopify/flash-list';
 
 const ITEM_HEIGHT = rpx(108);
 const ITEM_WIDTH = rpx(750);
-const WRAPPER_HEIGHT = vh(60) - rpx(104);
 
 interface IPlayListProps {
     item: IMusic.IMusicItem;
-    index: number;
-    currentIndex: number;
+    isCurrentMusic: boolean;
 }
 
 function _PlayListItem(props: IPlayListProps) {
     const colors = useColors();
-    const {item, index, currentIndex} = props;
+    const {item, isCurrentMusic} = props;
 
-    // console.log('rerender', index, currentIndex, item);
     return (
         <Pressable
             onPress={() => {
-                MusicQueue.play(item);
+                TrackPlayer.play(item);
             }}
             style={style.musicItem}>
-            {currentIndex === index && (
+            {isCurrentMusic && (
                 <Icon
                     name="music"
                     color={colors.textHighlight ?? colors.primary}
@@ -46,19 +43,20 @@ function _PlayListItem(props: IPlayListProps) {
                 style={[
                     style.musicItemTitle,
                     {
-                        color:
-                            index === currentIndex
-                                ? colors.textHighlight ?? colors.primary
-                                : colors.text,
+                        color: isCurrentMusic
+                            ? colors.textHighlight ?? colors.primary
+                            : colors.text,
                     },
                 ]}
                 ellipsizeMode="tail"
                 numberOfLines={1}>
                 {item.title}
-                <Text style={{fontSize: fontSizeConst.description}}>
-                    {' '}
-                    - {item.artist}
-                </Text>
+                {item.artist && (
+                    <Text style={{fontSize: fontSizeConst.description}}>
+                        {' '}
+                        - {item.artist}
+                    </Text>
+                )}
             </ThemeText>
             <Tag tagName={item.platform} />
             <IconButton
@@ -66,7 +64,7 @@ function _PlayListItem(props: IPlayListProps) {
                 name="close"
                 sizeType="small"
                 onPress={() => {
-                    MusicQueue.remove(item);
+                    TrackPlayer.remove(item);
                 }}
             />
         </Pressable>
@@ -77,11 +75,7 @@ const PlayListItem = React.memo(
     _PlayListItem,
     (prev, next) =>
         !!isSameMediaItem(prev.item, next.item) &&
-        prev.index === next.index &&
-        ((prev.currentIndex === prev.index &&
-            next.currentIndex === next.index) ||
-            (prev.currentIndex !== prev.index &&
-                next.currentIndex !== next.index)),
+        prev.isCurrentMusic === next.isCurrentMusic,
 );
 
 interface IBodyProps {
@@ -89,14 +83,13 @@ interface IBodyProps {
 }
 export default function Body(props: IBodyProps) {
     const {loading} = props;
-    const musicQueue = MusicQueue.useMusicQueue();
-    const currentMusicItem = MusicQueue.useCurrentMusicItem();
-    const [currentIndex, setCurrentIndex] = useState<number>(-1);
-    const listRef = useRef<FlatList<IMusic.IMusicItem> | null>();
+    const playList = TrackPlayer.usePlayList();
+    const currentMusicItem = TrackPlayer.useCurrentMusic();
+    const listRef = useRef<FlashList<IMusic.IMusicItem> | null>();
     const safeAreaInsets = useSafeAreaInsets();
 
     const initIndex = useMemo(() => {
-        const id = musicQueue.findIndex(_ =>
+        const id = playList.findIndex(_ =>
             isSameMediaItem(currentMusicItem, _),
         );
 
@@ -106,58 +99,32 @@ export default function Body(props: IBodyProps) {
         return undefined;
     }, []);
 
-    useEffect(() => {
-        setCurrentIndex(
-            musicQueue.findIndex(_ => isSameMediaItem(currentMusicItem, _)),
+    const renderItem = ({item}: {item: IMusic.IMusicItem; index: number}) => {
+        return (
+            <PlayListItem
+                item={item}
+                isCurrentMusic={!!isSameMediaItem(item, currentMusicItem)}
+            />
         );
-    }, [musicQueue, currentMusicItem]);
-
-    // useEffect(() => {
-    //     const id = musicQueue.findIndex(_ =>
-    //         isSameMediaItem(currentMusicItem, _),
-    //     );
-    //     if (id !== -1 && id) {
-    //         listRef.current?.scrollToIndex({
-    //             index: id,
-    //             viewPosition: 0,
-    //             viewOffset: ITEM_HEIGHT * 3,
-
-    //         });
-    //     }
-    // }, []);
-
-    const renderItem = useCallback(
-        ({item, index}: {item: IMusic.IMusicItem; index: number}) => {
-            // console.log('recall');
-            return (
-                <PlayListItem
-                    item={item}
-                    index={index}
-                    currentIndex={currentIndex}
-                />
-            );
-        },
-        [currentIndex],
-    );
+    };
 
     return loading ? (
         <Loading />
     ) : (
-        <View style={style.playList}>
-            <FlatList
+        <View
+            style={[
+                style.playList,
+                {
+                    paddingBottom: safeAreaInsets.bottom,
+                },
+            ]}>
+            <FlashList
                 ref={_ => {
                     listRef.current = _;
                 }}
-                style={[
-                    style.playListWrapper,
-                    {marginBottom: safeAreaInsets.bottom},
-                ]}
-                getItemLayout={(_, index) => ({
-                    length: ITEM_HEIGHT,
-                    offset: ITEM_HEIGHT * index,
-                    index,
-                })}
-                data={musicQueue}
+                extraData={{currentMusicItem}}
+                estimatedItemSize={ITEM_HEIGHT}
+                data={playList}
                 initialScrollIndex={initIndex}
                 renderItem={renderItem}
             />
@@ -166,15 +133,8 @@ export default function Body(props: IBodyProps) {
 }
 
 const style = StyleSheet.create({
-    playListWrapper: {
-        minWidth: rpx(750),
-        width: rpx(750),
-        height: WRAPPER_HEIGHT,
-        flex: 1,
-    },
     playList: {
         width: rpx(750),
-        height: WRAPPER_HEIGHT,
         flex: 1,
     },
     currentPlaying: {

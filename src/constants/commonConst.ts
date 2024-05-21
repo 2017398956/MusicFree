@@ -1,6 +1,10 @@
 import Animated, {Easing} from 'react-native-reanimated';
 
 export const internalSymbolKey = Symbol.for('$');
+// 加入播放列表/歌单的时间
+export const timeStampSymbol = Symbol.for('time-stamp');
+// 加入播放列表的辅助顺序
+export const sortIndexSymbol = Symbol.for('sort-index');
 export const internalSerializeKey = '$';
 export const localMusicSheetId = 'local-music-sheet';
 export const musicHistorySheetId = 'history-music-sheet';
@@ -16,18 +20,21 @@ export {emptyFunction};
 
 export enum RequestStateCode {
     /** 空闲 */
-    IDLE = 0,
-    /** 检索首页 */
-    PENDING_FP = 1,
+    IDLE = 0b00000000,
+    PENDING_FIRST_PAGE = 0b00000010,
+    LOADING = 0b00000010,
     /** 检索中 */
-    PENDING = 2,
+    PENDING_REST_PAGE = 0b00000011,
     /** 部分结束 */
-    PARTLY_DONE = 4,
+    PARTLY_DONE = 0b00000100,
     /** 全部结束 */
-    FINISHED = 5,
+    FINISHED = 0b0001000,
+    /** 出错了 */
+    ERROR = 0b10000000,
 }
 
 export const StorageKeys = {
+    /** @deprecated */
     MediaMetaKeys: 'media-meta-keys',
     PluginMetaKey: 'plugin-meta',
     MediaCache: 'media-cache',
