@@ -1,11 +1,15 @@
 # MusicFree
 
-> [!CAUTION]
-> 👎 小米/华为/vivo等<ins>应用市场的 MusicFree </ins>和本软件无关，**是套用本软件名称和 Logo 的广告软件**。
->
-> 👎 速悦音乐基于本软件二次开发，改动点仅仅是内置插件、修改一些 UI 以及引流，**并未遵守本项目的开源协议，且拒绝沟通**。
+**中文** | [English](./readme-en.md)
 
----
+![GitHub Repo stars](https://img.shields.io/github/stars/maotoumao/MusicFree) 
+![GitHub forks](https://img.shields.io/github/forks/maotoumao/MusicFree)
+![star](https://gitcode.com/maotoumao/MusicFree/star/badge.svg)
+
+![GitHub License](https://img.shields.io/github/license/maotoumao/MusicFree)
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/maotoumao/MusicFree/total)
+![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/maotoumao/MusicFree)
+![GitHub package.json version](https://img.shields.io/github/package-json/v/maotoumao/MusicFree)
 
 ## 简介
 
@@ -34,6 +38,14 @@
 1. 打包、二次分发 **请保留代码出处**：https://github.com/maotoumao/MusicFree
 2. 请不要用于商业用途，合法合规使用代码；
 3. 如果开源协议变更，将在此 Github 仓库更新，不另行通知。
+
+> [!CAUTION]
+> ### 👎 Hall of Shame
+> 👎 小米/华为/vivo等<ins>应用市场的 MusicFree </ins>和本软件无关，**是套用本软件名称和 Logo 的广告软件**。
+>
+> 👎 速悦音乐基于本软件二次开发，改动点仅仅是内置插件、修改一些 UI 以及引流，**并未遵守本项目的开源协议，且拒绝沟通**。
+
+---
 
 ## 特性
 
@@ -64,13 +76,13 @@
 下载 app 之后，只需要在侧边栏设置-插件设置中安装插件即可。支持安装本地插件和从网络安装插件（支持解析.js 文件和.json 描述文件；已经写了几个示意的插件：[指路这个仓库](https://github.com/maotoumao/MusicFreePlugins)，不过可能功能不是很完善）；
 
 
-你可以直接点击从网络安装插件，然后输入<https://gitee.com/maotoumao/MusicFreePlugins/raw/master/plugins.json> ，点击确认即可安装。
+你可以直接点击从网络安装插件，然后输入<https://raw.gitcode.com/maotoumao/MusicFreePlugins/raw/master/plugins.json> ，点击确认即可安装。
 
 图文版详细使用说明可以参考公众号：[MusicFree 插件使用指南](https://mp.weixin.qq.com/s?__biz=MzkxOTM5MDI4MA==&mid=2247483875&idx=1&sn=aedf8bb909540634d927de7fd2b4b8b1&chksm=c1a390c4f6d419d233908bb781d418c6b9fd2ca82e9e93291e7c93b8ead3c50ca5ae39668212#rd)，或者站点： https://musicfree.catcat.work/usage/mobile/install-plugin.html
 
 ## 下载地址
 
-请转到发布页查看：[指路](https://github.com/maotoumao/MusicFree/releases) (如果打不开可以把 github 换成 gitee)，公众号回复 Musicfree 也可以。
+请转到发布页查看：[指路](https://github.com/maotoumao/MusicFree/releases) (如果打不开可以把 github 换成 gitcode)，公众号回复 Musicfree 也可以。
 
 ## Q&A
 
@@ -90,6 +102,7 @@
 
 1. Star 这个项目，分享给你身边的人；
 2. 关注公众号👇或 b 站 [不想睡觉猫头猫](https://space.bilibili.com/12866223) 获取最新信息；
+3. 关注猫头猫的 [小红书](https://www.xiaohongshu.com/user/profile/5ce6085200000000050213a6?xhsshare=CopyLink&appuid=5ce6085200000000050213a6&apptime=1714394544)，虽然可能不会在这里更新软件相关的信息，但也算支持啦~
 
 ![微信公众号](./src/assets/imgs/wechat_channel.jpg)
 
@@ -109,35 +122,91 @@
 ## 应用截图
 
 **以下截图仅为 UI 样例，软件内部不提供任何音源，不代表实际使用时表现如下图。**
-
 #### 主界面
 
-![主界面](./.imgs/main.jpg)
+<img src="./.imgs/main-v0.6.jpg" width="320px" alt="主界面">
 
 #### 侧边栏
 
+- 侧边栏
+
+<img src="./.imgs/sidebar-v0.6.jpg" width="320px" alt="侧边栏">
+
 - 基础设置
-  ![基础设置](./.imgs/basic-setting.jpg)
+
+<img src="./.imgs/basic-setting-v0.6.jpg" width="320px" alt="基础设置">
 
 - 主题设置
-  ![主题设置](./.imgs/theme-setting.jpg)
+
+<img src="./.imgs/theme-setting-v0.6.jpg" width="320px" alt="主题设置">
 
 #### 音乐相关
 
 - 歌单页
-  ![歌单页](./.imgs/song-sheet.jpg)
+
+<img src="./.imgs/song-sheet-v0.6.jpg" width="320px" alt="歌单页">
 
 - 歌单内检索
-  ![歌单内检索](./.imgs/search-in-sheet.jpg)
+
+<img src="./.imgs/search-in-sheet-v0.6.jpg" width="320px" alt="歌单内检索">
 
 - 播放页
-  ![播放页](./.imgs/song-cover.jpg)
+
+<img src="./.imgs/song-cover-v0.6.jpg" width="320px" alt="播放页">
 
 - 歌词页
-  ![歌词页](./.imgs/song-lrc.jpg)
 
+<img src="./.imgs/song-lrc-v0.6.jpg" width="320px" alt="歌词页">
 
 #### 搜索相关
 
 - 作者信息
-  ![专辑信息](./.imgs/artist-detail.jpg)
+
+<img src="./.imgs/artist-detail-v0.6.jpg" width="320px" alt="作者信息">
+
+
+<details>
+
+
+<summary>以下是软件早期版本的 UI</summary>
+
+#### 主界面
+
+<img src="./.imgs/main.jpg" width="320px" alt="主界面">
+
+#### 侧边栏
+
+- 基础设置
+
+<img src="./.imgs/basic-setting.jpg" width="320px" alt="基础设置">
+
+- 主题设置
+
+<img src="./.imgs/theme-setting.jpg" width="320px" alt="主题设置">
+
+#### 音乐相关
+
+- 歌单页
+
+<img src="./.imgs/song-sheet.jpg" width="320px" alt="歌单页">
+
+- 歌单内检索
+
+<img src="./.imgs/search-in-sheet.jpg" width="320px" alt="歌单内检索">
+
+- 播放页
+
+<img src="./.imgs/song-cover.jpg" width="320px" alt="播放页">
+
+- 歌词页
+
+<img src="./.imgs/song-lrc.jpg" width="320px" alt="歌词页">
+
+#### 搜索相关
+
+- 作者信息
+
+<img src="./.imgs/artist-detail.jpg" width="320px" alt="作者信息">
+
+
+</details>
